@@ -95,7 +95,7 @@ const TERMS = [
   {
     h: "Intellectual property",
     ps: [
-      "TimeVault is original software released under the MIT license. It is not affiliated with, endorsed by, or connected to any other time tracking product. References to alternatives are for identification only.",
+      "TimeVault is original software licensed under the TimeVault End-User License Agreement (EULA); all rights are reserved by the Licensor. It is not affiliated with, endorsed by, or connected to any other time tracking product. References to alternatives are for identification only.",
     ],
   },
   {
@@ -159,7 +159,7 @@ export function LegalPage({ kind }: { kind: "privacy" | "terms" }) {
         </div>
 
         <p className="mt-12 border-t border-line pt-6 text-[13px] text-muted">
-          Questions? The honest answer is probably already above. TimeVault · free to use · MIT licensed.
+          Questions? The honest answer is probably already above. TimeVault · free to use · All Rights Reserved.
         </p>
       </main>
     </div>

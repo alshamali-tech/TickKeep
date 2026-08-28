@@ -1,17 +1,50 @@
-MIT License
+TimeVault End-User License Agreement (EULA)
+Copyright (c) 2026 TimeVault contributors. All Rights Reserved.
 
-Copyright (c) 2026 TimeVault contributors
+This End-User License Agreement ("EULA") is a legal agreement between you (an
+individual or a single entity) and TimeVault contributors ("Licensor") for the
+software product named TimeVault ("Software"). By installing, copying, or
+otherwise using the Software, you agree to be bound by the terms of this EULA.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. GRANT OF LICENSE
+Subject to the terms and conditions of this EULA, the Licensor hereby grants
+you a limited, non-exclusive, non-transferable, revocable license to install
+and use the Software in object code (compiled) form only, free of charge, for
+both personal and commercial purposes.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. RESTRICTIONS
+You may NOT:
+a) Copy, modify, adapt, translate, or create derivative works of the Software.
+b) Reverse engineer, decompile, disassemble, or otherwise attempt to derive
+   the source code of the Software.
+c) Rent, lease, lend, sell, redistribute, sublicense, or otherwise transfer
+   the Software to any third party.
+d) Use the Software to provide commercial hosting services, or operate it as
+   a service bureau.
+e) Remove or alter any proprietary notices, labels, or marks on the Software.
 
+3. OWNERSHIP AND INTELLECTUAL PROPERTY
+The Software is licensed, not sold. The Licensor retains all right, title, and
+interest in and to the Software, including all copyrights, patents, trade
+secrets, trademarks, and other intellectual property rights. You acknowledge
+that the Software contains valuable confidential information and trade
+secrets of the Licensor.
+
+4. FUTURE VERSIONS AND MONETIZATION
+The Licensor reserves the right to modify, update, or discontinue the
+Software, or any part thereof, at any time. Future versions of the Software
+may include premium features, subscriptions, or paid tiers. Your continued
+use of any updated or future versions of the Software constitutes your
+acceptance of any new license terms, fee structures, or usage limits
+associated with those versions.
+
+5. VOLUNTARY DONATIONS
+The Software is currently provided free of charge. Voluntary donations are
+accepted to support ongoing development. Making a donation does not grant you
+any additional rights, ownership, or privileges beyond those specified in
+this EULA.
+
+6. DISCLAIMER OF WARRANTIES AND LIMITATION OF LIABILITY
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,3 +52,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+7. TERMINATION
+This EULA is effective until terminated. It will terminate automatically
+without notice from the Licensor if you fail to comply with any provision of
+this EULA. Upon termination, you must destroy all copies of the Software.

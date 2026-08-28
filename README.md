@@ -75,4 +75,4 @@ public/       manifest, sw.js, icons, robots, sitemap, og-image
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Proprietary — TimeVault End-User License Agreement (EULA). All Rights Reserved. See [LICENSE](LICENSE).

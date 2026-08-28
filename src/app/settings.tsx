@@ -572,7 +572,7 @@ function AboutTab() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-lg font-bold text-ink">About TimeVault</h2>
-            <p className="mt-1 font-mono text-[12.5px] text-muted">v1.0.0 · MIT license · static, serverless, yours</p>
+            <p className="mt-1 font-mono text-[12.5px] text-muted">v1.0.0 · EULA licensed · static, serverless, yours</p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-ok/10 px-3 py-1 text-[12.5px] font-semibold text-ok">
             <I name="shield" size={14} /> No telemetry

@@ -27,7 +27,7 @@ function Reveal({ children, delay = 0, className }: { children: React.ReactNode;
 
 const TICKER = [
   "Free now", "No sign-up", "100% on-device", "Offline-first", "PDF invoices",
-  "Budgets & billable rates", "CSV + JSON export", "Undo-friendly", "MIT licensed",
+  "Budgets & billable rates", "CSV + JSON export", "Undo-friendly", "Personal & commercial use",
   "Sync via Drive, OneDrive or your server",
 ];
 
@@ -113,7 +113,7 @@ function Hero() {
             </a>
           </div>
           <p className="mt-5 font-mono text-[12px] text-muted">
-            Free to use right now · MIT licensed · works fully offline once loaded
+            Free to use right now · works fully offline once loaded
           </p>
         </Reveal>
         <Reveal delay={140}>
@@ -465,7 +465,7 @@ const FAQS = [
   { q: "Can I send real invoices to clients?", a: "You can build invoices from unbilled time and expenses, add tax, discounts, notes and payment terms, then download a polished PDF with your business branding. Track status from draft to sent to paid — overdue is flagged automatically." },
   { q: "I already use another time tracker. Can I move?", a: "Yes. The Import page accepts TimeVault JSON backups and the standard CSV columns most trackers export (date, client, project, task, hours, billable, rate). Your history comes with you." },
   { q: "Can my team use it together?", a: "Yes — the Team page merges everyone's work through a shared folder or server. Adds are unioned, edits converge, deletions propagate, and no one's hours get clobbered." },
-  { q: "So what's the catch?", a: "There isn't one, but here's the deal in full: TimeVault is MIT-licensed, donation-funded, and built for independent people. If it saves you money and you feel like buying the developer a coffee, there are links for that. No pressure, ever." },
+  { q: "So what's the catch?", a: "There isn't one, but here's the deal in full: TimeVault is free to use for personal and commercial work, donation-funded, and built for independent people. If it saves you money and you feel like buying the developer a coffee, there are links for that. No pressure, ever. The full terms live in the EULA." },
 ];
 
 function FAQ() {
@@ -577,7 +577,7 @@ function Footer() {
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Badge tone="green">Free now</Badge>
-            <Badge tone="gray">MIT licensed</Badge>
+            <Badge tone="gray">EULA licensed</Badge>
           </div>
         </div>
         {cols.map((c) => (
@@ -595,7 +595,7 @@ function Footer() {
       </div>
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 sm:px-6">
-          <p className="font-mono text-[11.5px] text-muted">© {new Date().getFullYear()} TimeVault · free to use · MIT licensed</p>
+          <p className="font-mono text-[11.5px] text-muted">© {new Date().getFullYear()} TimeVault · free to use · All Rights Reserved</p>
           <a href={DONATIONS[0].href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-amber transition-opacity hover:opacity-80">
             <I name="heart" size={14} /> Support TimeVault
           </a>

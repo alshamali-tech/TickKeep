@@ -1,22 +1,35 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Button, ToastProvider } from "./components/ui";
 import { Logo } from "./components/icons";
 import Landing from "./app/landing";
 import { Shell } from "./app/shell";
 import { DashboardPage } from "./app/dashboard";
 import { EntriesPage, TimerPage } from "./app/timer";
-import { ProjectsPage } from "./app/projects";
-import { ClientsPage } from "./app/clients";
-import { InvoicesPage } from "./app/invoices";
-import { ExpensesPage } from "./app/expenses";
-import { EstimatesPage } from "./app/estimates";
-import { ReportsPage } from "./app/reports";
-import { ReviewPage } from "./app/review";
-import { SettingsPage } from "./app/settings";
-import { SyncPage } from "./app/sync";
-import { ImportPage } from "./app/import";
-import { TeamPage } from "./app/team";
 import { LegalPage } from "./app/legal";
+
+/* Secondary routes are code-split: landing, shell, dashboard and the timer
+ * stay in the initial chunk; everything else loads on first visit. */
+const ProjectsPage = lazy(() => import("./app/projects").then((m) => ({ default: m.ProjectsPage })));
+const ClientsPage = lazy(() => import("./app/clients").then((m) => ({ default: m.ClientsPage })));
+const InvoicesPage = lazy(() => import("./app/invoices").then((m) => ({ default: m.InvoicesPage })));
+const ExpensesPage = lazy(() => import("./app/expenses").then((m) => ({ default: m.ExpensesPage })));
+const EstimatesPage = lazy(() => import("./app/estimates").then((m) => ({ default: m.EstimatesPage })));
+const ReportsPage = lazy(() => import("./app/reports").then((m) => ({ default: m.ReportsPage })));
+const ReviewPage = lazy(() => import("./app/review").then((m) => ({ default: m.ReviewPage })));
+const SettingsPage = lazy(() => import("./app/settings").then((m) => ({ default: m.SettingsPage })));
+const SyncPage = lazy(() => import("./app/sync").then((m) => ({ default: m.SyncPage })));
+const ImportPage = lazy(() => import("./app/import").then((m) => ({ default: m.ImportPage })));
+const TeamPage = lazy(() => import("./app/team").then((m) => ({ default: m.TeamPage })));
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center py-24" role="status" aria-label="Loading page">
+      <span className="pulse-dot h-3 w-3 rounded-full bg-accent" />
+      <span className="pulse-dot ml-2 h-3 w-3 rounded-full bg-accent/70" style={{ animationDelay: "0.2s" }} />
+      <span className="pulse-dot ml-2 h-3 w-3 rounded-full bg-accent/40" style={{ animationDelay: "0.4s" }} />
+    </div>
+  );
+}
 
 function useHashPath(): string {
   const [path, setPath] = useState(() => window.location.hash || "#/");
@@ -77,7 +90,9 @@ export default function App() {
   if (path.startsWith("#/app")) {
     content = (
       <Shell path={path}>
-        <AppPages path={path} />
+        <Suspense fallback={<PageLoader />}>
+          <AppPages path={path} />
+        </Suspense>
       </Shell>
     );
   } else if (path.startsWith("#/privacy")) {

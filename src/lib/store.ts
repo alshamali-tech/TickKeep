@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { addDays, hoursAmount, parseKey, round2, todayKey, toKey, uid } from "./utils";
 import { buildInvoice, computeTotals } from "./invoice";
 import { pushUndo } from "./undo";
@@ -1029,7 +1029,7 @@ export const useStore = create<AppState>()(
         savedReports: s.savedReports,
         tombstones: s.tombstones,
         collab: s.collab,
-      }),
+      }) as AppState,
       /* Never discard data on a version bump — pass the blob through and let
        * `merge` reconcile it against fresh defaults. */
       migrate: (persisted) => persisted as AppState,
@@ -1061,9 +1061,58 @@ export const useStore = create<AppState>()(
         m.builder = { ...c.builder, ...(p.builder ?? {}) };
         return m as unknown as AppState;
       },
+      /* Debounced storage: burst mutations (imports, bulk edits) coalesce into
+       * one localStorage write instead of one per set(). Reads stay consistent
+       * via the pending buffer; pagehide flushes so nothing is lost on close. */
+      storage: createJSONStorage(() => debouncedStateStorage),
     }
   )
 );
+
+const PERSIST_KEY = "timevault-v1";
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingWrite: string | null = null;
+
+function flushPersistNow(): void {
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  if (pendingWrite !== null) {
+    try {
+      localStorage.setItem(PERSIST_KEY, pendingWrite);
+    } catch {
+      /* quota / private mode — in-memory state is still authoritative */
+    }
+    pendingWrite = null;
+  }
+}
+
+/** Force any pending persistence to disk (used before exports & sync pushes). */
+export const flushPersist = flushPersistNow;
+
+const debouncedStateStorage = {
+  getItem: (key: string): string | null =>
+    key === PERSIST_KEY && pendingWrite !== null ? pendingWrite : localStorage.getItem(key),
+  setItem: (key: string, value: string): void => {
+    if (key !== PERSIST_KEY) {
+      localStorage.setItem(key, value);
+      return;
+    }
+    pendingWrite = value;
+    if (persistTimer) clearTimeout(persistTimer);
+    persistTimer = setTimeout(flushPersistNow, 150);
+  },
+  removeItem: (key: string): void => {
+    if (key === PERSIST_KEY) pendingWrite = null;
+    localStorage.removeItem(key);
+  },
+};
+
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", flushPersistNow);
+  window.addEventListener("beforeunload", flushPersistNow);
+}
 
 /* ---------------- derived helpers ---------------- */
 

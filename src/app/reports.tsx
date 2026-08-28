@@ -32,7 +32,10 @@ function useRates(needed: boolean, currency: string) {
       .finally(() => setLoading(false));
   }, [needed]);
   const stale = info ? Date.now() - info.fetchedAt > 24 * 3600_000 : true;
-  return { info, loading, stale, getRate: makeConverter(info, currency) };
+  /* Stable identity — the report ctx (and every aggregation memo) depends on
+   * this; recreating it per render would recompute every block needlessly. */
+  const getRate = useMemo(() => makeConverter(info, currency), [info, currency]);
+  return { info, loading, stale, getRate };
 }
 
 /* ---------------- page ---------------- */
@@ -783,8 +786,6 @@ function BuilderTab({ ctx, weekStart }: { ctx: AggCtx; weekStart: 0 | 1 }) {
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2" onDragOver={(e) => e.preventDefault()}>
           {blocks.map((b, i) => {
-            const rows = computeRows(b, ctx, weekStart);
-            const fmt = (v: number) => formatMetricValue(v, b.metric, ctx.currency);
             const meta = BLOCK_META.find((m) => m.type === b.type);
             const isConfig = configOpen === b.id;
             return (
@@ -870,7 +871,7 @@ function BuilderTab({ ctx, weekStart }: { ctx: AggCtx; weekStart: 0 | 1 }) {
                 )}
 
                 <div className="px-4 py-4 sm:px-5">
-                  <BlockBody block={b} rows={rows} fmt={fmt} currency={ctx.currency} />
+                  <BlockBody block={b} ctx={ctx} weekStart={weekStart} />
                 </div>
               </div>
             );
@@ -886,7 +887,11 @@ function BuilderTab({ ctx, weekStart }: { ctx: AggCtx; weekStart: 0 | 1 }) {
   );
 }
 
-function BlockBody({ block, rows, fmt, currency }: { block: ReportBlock; rows: AggRow[]; fmt: (v: number) => string; currency: string }) {
+function BlockBody({ block, ctx, weekStart }: { block: ReportBlock; ctx: AggCtx; weekStart: 0 | 1 }) {
+  /* Memoized per block — aggregation never re-runs on unrelated renders. */
+  const rows = useMemo(() => computeRows(block, ctx, weekStart), [block, ctx, weekStart]);
+  const fmt = useCallback((v: number) => formatMetricValue(v, block.metric, ctx.currency), [block.metric, ctx.currency]);
+  const currency = ctx.currency;
   if (block.type === "stat") {
     const total = sumRows(rows, block.metric);
     const t = totalRow(rows);

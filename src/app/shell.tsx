@@ -50,6 +50,7 @@ const NAV: Array<{ title: string; items: Array<{ to: string; label: string; icon
     items: [
       { to: "#/app/sync", label: "Sync", icon: "sync" },
       { to: "#/app/import", label: "Import", icon: "upload" },
+      { to: "#/app/tests", label: "Test bench", icon: "check" },
       { to: "#/app/settings", label: "Settings", icon: "gear" },
     ],
   },
@@ -69,6 +70,7 @@ const TITLES: Array<[string, string]> = [
   ["#/app/team", "Team"],
   ["#/app/sync", "Sync & backup"],
   ["#/app/import", "Import data"],
+  ["#/app/tests", "Test bench"],
   ["#/app/settings", "Settings"],
 ];
 

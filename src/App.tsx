@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Button, ToastProvider } from "./components/ui";
 import { Logo } from "./components/icons";
+import { useStore } from "./lib/store";
 import Landing from "./app/landing";
 import { Shell } from "./app/shell";
 import { DashboardPage } from "./app/dashboard";
@@ -20,6 +21,7 @@ const SettingsPage = lazy(() => import("./app/settings").then((m) => ({ default:
 const SyncPage = lazy(() => import("./app/sync").then((m) => ({ default: m.SyncPage })));
 const ImportPage = lazy(() => import("./app/import").then((m) => ({ default: m.ImportPage })));
 const TeamPage = lazy(() => import("./app/team").then((m) => ({ default: m.TeamPage })));
+const TestsPage = lazy(() => import("./app/tests").then((m) => ({ default: m.TestsPage })));
 
 function PageLoader() {
   return (
@@ -54,6 +56,7 @@ function AppPages({ path }: { path: string }) {
   if (path.startsWith("#/app/team")) return <TeamPage />;
   if (path.startsWith("#/app/sync")) return <SyncPage />;
   if (path.startsWith("#/app/import")) return <ImportPage />;
+  if (path.startsWith("#/app/tests")) return <TestsPage />;
   if (path.startsWith("#/app/settings")) return <SettingsPage />;
   return <DashboardPage />;
 }
@@ -79,8 +82,30 @@ function NotFound() {
   );
 }
 
+/* Applies the theme to <html> and persists it for the no-flash bootstrap
+ * script in index.html. Runs everywhere (landing, app, legal). */
+function useThemeApplier() {
+  const theme = useStore((s) => s.prefs.theme);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      const dark = theme === "dark" || (theme === "system" && mq.matches);
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    };
+    apply();
+    try {
+      localStorage.setItem("tv-theme", theme);
+    } catch {
+      /* private mode */
+    }
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, [theme]);
+}
+
 export default function App() {
   const path = useHashPath();
+  useThemeApplier();
 
   useEffect(() => {
     window.scrollTo({ top: 0 });

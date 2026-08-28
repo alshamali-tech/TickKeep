@@ -11,7 +11,7 @@ import {
 } from "../lib/invoice";
 import { I } from "../components/icons";
 import {
-  Badge, Button, Card, ConfirmDialog, EmptyState, IconButton, Input, Menu, Modal, Segmented,
+  Badge, Button, Card, ConfirmDialog, EmptyState, IconButton, Input, Menu, Modal, Pagination, Segmented,
   Select, Textarea, statusBadge, useToast, navigate,
 } from "../components/ui";
 import { InvoiceDocument } from "./invoiceDoc";
@@ -70,6 +70,7 @@ function InvoiceList() {
   const { push } = useToast();
 
   const [filter, setFilter] = useState<"all" | "draft" | "sent" | "paid" | "overdue" | "void">("all");
+  const [page, setPage] = useState(1);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [toDelete, setToDelete] = useState<Invoice | null>(null);
 
@@ -79,6 +80,9 @@ function InvoiceList() {
     entries.filter((e) => e.billable && !billedE.has(e.id)).length +
     expenses.filter((x) => x.billable && !billedX.has(x.id)).length;
 
+  /* Pagination: keeps the table light even with thousands of invoices. */
+  const PAGE_SIZE = 25;
+
   const rows = useMemo(() => {
     const list = invoices
       .map((inv) => ({ inv, ds: derivedStatus(inv) }))
@@ -86,6 +90,13 @@ function InvoiceList() {
       .sort((a, b) => b.inv.issueDate.localeCompare(a.inv.issueDate));
     return list;
   }, [invoices, filter]);
+
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const paged = useMemo(
+    () => rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [rows, safePage]
+  );
 
   const moneySnapshot = useMemo(() => {
     let outstanding = 0;
@@ -115,7 +126,10 @@ function InvoiceList() {
         <Segmented
           label="Filter invoices"
           value={filter}
-          onChange={setFilter}
+          onChange={(v) => {
+            setFilter(v);
+            setPage(1);
+          }}
           options={[
             { value: "all", label: `All · ${counts.all}` },
             { value: "draft", label: `Draft · ${counts.draft}` },
@@ -174,6 +188,7 @@ function InvoiceList() {
       ) : rows.length === 0 ? (
         <EmptyState icon="filter" title="Nothing in this bucket" desc="Try a different status filter." />
       ) : (
+        <>
         <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-card">
           <table className="w-full min-w-[760px] border-collapse text-left">
             <thead>
@@ -194,7 +209,7 @@ function InvoiceList() {
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ inv, ds }) => {
+              {paged.map(({ inv, ds }) => {
                 const client = clients.find((c) => c.id === inv.clientId);
                 const { total } = computeTotals(inv.items, inv.taxRate, inv.discount);
                 const balance = invoiceBalance(inv);
@@ -236,6 +251,12 @@ function InvoiceList() {
             </tbody>
           </table>
         </div>
+        {pageCount > 1 && (
+          <div className="mt-3 flex justify-end">
+            <Pagination page={safePage} pages={pageCount} onPage={setPage} summary="invoices" />
+          </div>
+        )}
+        </>
       )}
 
       <InvoiceWizard open={wizardOpen} onClose={() => setWizardOpen(false)} />

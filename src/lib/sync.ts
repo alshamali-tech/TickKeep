@@ -169,61 +169,6 @@ export async function folderRead(interactive: boolean): Promise<RemoteFile | nul
   }
 }
 
-/* ---------- WebDAV adapter ---------- */
-
-export interface WebDavConfig {
-  url: string;
-  username: string;
-  password: string;
-}
-
-function authHeaders(cfg: WebDavConfig): Record<string, string> {
-  if (!cfg.username) return {};
-  const raw = `${cfg.username}:${cfg.password}`;
-  let enc: string;
-  try {
-    enc = btoa(raw);
-  } catch {
-    enc = btoa(unescape(encodeURIComponent(raw)));
-  }
-  return { Authorization: `Basic ${enc}` };
-}
-
-export function validDavUrl(u: string): boolean {
-  try {
-    const parsed = new URL(u.trim());
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-export async function webdavTest(cfg: WebDavConfig): Promise<"ok" | "empty"> {
-  const res = await fetch(cfg.url.trim(), { method: "GET", headers: authHeaders(cfg) });
-  if (res.status === 404) return "empty";
-  if (!res.ok) throw new SyncError("http", `The server answered with status ${res.status}.`);
-  return "ok";
-}
-
-export async function webdavPush(cfg: WebDavConfig): Promise<void> {
-  const json = useStore.getState().exportData();
-  const res = await fetch(cfg.url.trim(), {
-    method: "PUT",
-    headers: { ...authHeaders(cfg), "Content-Type": "application/json" },
-    body: json,
-  });
-  if (!res.ok) throw new SyncError("http", `Upload failed — server status ${res.status}.`);
-}
-
-export async function webdavRead(cfg: WebDavConfig): Promise<RemoteFile | null> {
-  const res = await fetch(cfg.url.trim(), { method: "GET", headers: authHeaders(cfg) });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new SyncError("http", `Download failed — server status ${res.status}.`);
-  const lastMod = res.headers.get("Last-Modified");
-  const modified = lastMod ? Date.parse(lastMod) : Date.now();
-  return { text: await res.text(), modified: Number.isNaN(modified) ? Date.now() : modified };
-}
-
 /* ---------- shared pull helpers ---------- */
 
 export function remoteSnapshotAt(parsed: unknown, fallbackModified: number): string {
@@ -242,7 +187,7 @@ export function parseSnapshot(text: string): unknown {
 
 /* ---------- programmatic push for the auto-sync scheduler ---------- */
 
-export async function autoPush(kind: "folder" | "webdav"): Promise<boolean> {
+export async function autoPush(kind: "folder"): Promise<boolean> {
   const s = useStore.getState();
   try {
     if (kind === "folder") {
@@ -252,11 +197,7 @@ export async function autoPush(kind: "folder" | "webdav"): Promise<boolean> {
       s.setFolderMeta({ ...meta, lastSyncAt: nowIso(), lastRemoteAt: nowIso() });
       return true;
     }
-    const cfg = s.syncMeta.webdav;
-    if (!cfg) return false;
-    await webdavPush(cfg);
-    s.setWebDavMeta({ ...cfg, lastSyncAt: nowIso(), lastRemoteAt: nowIso() });
-    return true;
+    return false;
   } catch {
     return false;
   }

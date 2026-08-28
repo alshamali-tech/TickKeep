@@ -251,7 +251,7 @@ export interface Tombstone {
   at: string;
 }
 
-export type SyncKind = "folder" | "webdav";
+export type SyncKind = "folder";
 
 export interface FolderSyncMeta {
   provider: "device" | "gdrive" | "onedrive";
@@ -260,17 +260,8 @@ export interface FolderSyncMeta {
   lastRemoteAt: string | null;
 }
 
-export interface WebDavSyncMeta {
-  url: string;
-  username: string;
-  password: string;
-  lastSyncAt: string | null;
-  lastRemoteAt: string | null;
-}
-
 export interface SyncMeta {
   folder: FolderSyncMeta | null;
-  webdav: WebDavSyncMeta | null;
   auto: { enabled: boolean; intervalMin: number };
   active: SyncKind | null;
 }
@@ -392,7 +383,6 @@ interface AppActions {
   setPrefs: (patch: Partial<Prefs>) => void;
   setDonation: (patch: Partial<DonationState>) => void;
   setFolderMeta: (meta: FolderSyncMeta | null) => void;
-  setWebDavMeta: (meta: WebDavSyncMeta | null) => void;
   setAutoSync: (patch: Partial<SyncMeta["auto"]>) => void;
   setActiveSync: (kind: SyncKind | null) => void;
   setCollab: (patch: Partial<CollabState>) => void;
@@ -483,7 +473,7 @@ const defaults = (): AppData => ({
   },
   donation: { useCount: 0, lastToastAt: null },
   activeTimer: null,
-  syncMeta: { folder: null, webdav: null, auto: { enabled: false, intervalMin: 15 }, active: null },
+  syncMeta: { folder: null, auto: { enabled: false, intervalMin: 15 }, active: null },
   builder: { name: "Untitled report", blocks: [] },
   savedReports: [],
   tombstones: [],
@@ -968,14 +958,6 @@ export const useStore = create<AppState>()(
             ...s.syncMeta,
             folder: meta,
             active: meta === null ? (s.syncMeta.active === "folder" ? null : s.syncMeta.active) : "folder",
-          },
-        })),
-      setWebDavMeta: (meta) =>
-        set((s) => ({
-          syncMeta: {
-            ...s.syncMeta,
-            webdav: meta,
-            active: meta === null ? (s.syncMeta.active === "webdav" ? null : s.syncMeta.active) : "webdav",
           },
         })),
       setAutoSync: (patch) =>

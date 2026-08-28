@@ -560,7 +560,7 @@ function DataTab() {
 /* ---------------- about ---------------- */
 
 const DONATIONS = [
-  { label: "Ko-fi", href: "https://ko-fi.com/timevault" },
+  { label: "Ko-fi", href: "https://ko-fi.com/mammonalshamali" },
   { label: "Buy Me a Coffee", href: "https://buymeacoffee.com/timevault" },
   { label: "PayPal", href: "https://paypal.me/timevault" },
 ];

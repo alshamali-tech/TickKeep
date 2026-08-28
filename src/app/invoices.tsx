@@ -745,11 +745,52 @@ function EmailComposer({ open, onClose, inv }: { open: boolean; onClose: () => v
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const mailto = () => {
+  const buildPdfFile = async (): Promise<File> => {
+    const blob = (await invoicePdf(
+      inv, client ?? null, business,
+      inv.templateId ?? invDefaults.templateId,
+      inv.accent ?? invDefaults.accent,
+      inv.paymentDetails ?? invDefaults.paymentDetails,
+      true
+    )) as Blob;
+    return new File([blob], `${inv.number}.pdf`, { type: "application/pdf" });
+  };
+
+  /** Attach the PDF via the Web Share API where the platform supports it
+   *  (mobile + some desktop). Falls back to download + open mail app. */
+  const sendWithAttachment = async () => {
+    try {
+      const file = await buildPdfFile();
+      const nav = navigator as Navigator & { canShare?: (d: { files: File[] }) => boolean };
+      if (nav.canShare?.({ files: [file] }) && typeof nav.share === "function") {
+        await nav.share({
+          files: [file],
+          title: subject,
+          text: body,
+        });
+        if (markSent && inv.status === "draft") setInvoiceStatus(inv.id, "sent");
+        push({ kind: "ok", title: "Invoice shared with attachment", desc: `${inv.number}.pdf` });
+        return;
+      }
+    } catch (e) {
+      // user dismissed the share sheet — don't fall through to mailto
+      if ((e as DOMException)?.name === "AbortError") return;
+    }
+    // Fallback: download the PDF, then open the mail app.
+    await downloadInvoice();
     const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
     if (markSent && inv.status === "draft") setInvoiceStatus(inv.id, "sent");
-    push({ kind: "ok", title: "Opened your mail app", desc: "Attach the PDF, then send." });
+    push({ kind: "ok", title: "PDF downloaded — attach it in your mail app", desc: `${inv.number}.pdf is in your Downloads folder.` });
+  };
+
+  const downloadInvoice = async () => {
+    await invoicePdf(
+      inv, client ?? null, business,
+      inv.templateId ?? invDefaults.templateId,
+      inv.accent ?? invDefaults.accent,
+      inv.paymentDetails ?? invDefaults.paymentDetails
+    );
   };
 
   const copy = async () => {
@@ -769,18 +810,11 @@ function EmailComposer({ open, onClose, inv }: { open: boolean; onClose: () => v
       wide
       footer={
         <>
-          <Button variant="ghost" size="sm" icon="download" className="mr-auto" onClick={async () => {
-            await invoicePdf(
-              inv, client ?? null, business,
-              inv.templateId ?? invDefaults.templateId,
-              inv.accent ?? invDefaults.accent,
-              inv.paymentDetails ?? invDefaults.paymentDetails
-            );
-          }}>
-            Get the PDF
+          <Button variant="ghost" size="sm" icon="download" className="mr-auto" onClick={() => void downloadInvoice()}>
+            PDF
           </Button>
           <Button variant="outline" icon="copy" onClick={() => void copy()}>Copy email</Button>
-          <Button icon="send" onClick={mailto}>Open in mail app</Button>
+          <Button icon="send" onClick={() => void sendWithAttachment()}>Attach & send</Button>
         </>
       }
     >
@@ -837,8 +871,16 @@ function EmailComposer({ open, onClose, inv }: { open: boolean; onClose: () => v
         </div>
         <label className="flex items-center gap-2.5 text-[13px] font-medium text-ink2">
           <input type="checkbox" checked={markSent} onChange={(e) => setMarkSent(e.target.checked)} className="h-4 w-4 accent-[var(--tv-accent)]" />
-          Mark invoice as <strong className="text-ink">Sent</strong> when I open the mail app
+          Mark invoice as <strong className="text-ink">Sent</strong> when I send
         </label>
+        <p className="flex items-start gap-2 rounded-lg bg-surface2/60 px-3.5 py-2.5 text-[12px] leading-relaxed text-muted">
+          <I name="clip" size={14} className="mt-0.5 shrink-0 text-accent" />
+          <span>
+            <strong className="text-ink2">Attach &amp; send</strong> hands the PDF to your system's share sheet where it's
+            attached automatically. If your browser can't attach files, the PDF is downloaded and your mail app opens — just
+            drop the file in before sending.
+          </span>
+        </p>
       </div>
     </Modal>
   );

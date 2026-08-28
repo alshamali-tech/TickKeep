@@ -284,6 +284,101 @@ export const SUITES: SuiteDef[] = [
   },
 
   {
+    name: "Email, calendar & documents",
+    tests: [
+      {
+        name: "Invoice email composer offers Attach & send",
+        fn: async (t) => {
+          const inv = t.store().invoices[0];
+          t.assert(inv !== undefined, "an invoice should exist");
+          await t.nav(`#/app/invoices/${inv.id}`);
+          await t.clickText("Send by email");
+          const d = await dialog(t, `Send ${inv.number} by email`);
+          const attachBtn = [...d.querySelectorAll("button")].find((b) => (b.textContent || "").includes("Attach & send"));
+          t.assert(attachBtn !== undefined, "the composer should expose an Attach & send action");
+          const note = (d.textContent || "").toLowerCase();
+          t.assert(note.includes("attach"), "the composer should explain the attachment behaviour");
+          await closeTopDialog(t);
+        },
+      },
+      {
+        name: "Calendar event logs time with the event description",
+        fn: async (t) => {
+          await t.nav("#/app/calendar");
+          const input = t.q('input[type="file"]') as HTMLInputElement | null;
+          t.assert(input !== null, "calendar should expose a file picker");
+          const day = todayKey().replace(/-/g, "");
+          const ics = [
+            "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "UID:e2e-log-1",
+            `DTSTART:${day}T140000`, `DTEND:${day}T150000`,
+            "SUMMARY:E2E sprint planning", "END:VEVENT", "END:VCALENDAR",
+          ].join("\r\n");
+          await t.setFiles(input!, [t.makeFile("log.ics", ics, "text/calendar")]);
+          await t.waitForText("E2E sprint planning", 6000);
+          await t.clickText("Log time");
+          const d = await dialog(t, "Add time entry");
+          const desc = d.querySelector('input[type="text"], input:not([type])') as HTMLInputElement | null;
+          t.assert(desc !== null && desc.value.includes("E2E sprint planning"), "the entry form should be pre-filled with the event summary");
+          await closeTopDialog(t);
+        },
+      },
+      {
+        name: "Invoice detail exposes PDF and print actions",
+        fn: async (t) => {
+          const inv = t.store().invoices[0];
+          await t.nav(`#/app/invoices/${inv.id}`);
+          await t.waitForText("Total due");
+          const btns = [...document.querySelectorAll("main button")].map((b) => (b.textContent || "").trim());
+          t.assert(btns.some((b) => b === "PDF"), "a PDF download action should be visible");
+          t.assert(btns.some((b) => b === "Print"), "a print action should be visible");
+        },
+      },
+      {
+        name: "Client statement action is available from the client row",
+        fn: async (t) => {
+          await t.nav("#/app/clients");
+          const rows = t.qa("tbody tr");
+          t.assert(rows.length > 0, "at least one client row should exist");
+          const menuBtn = rows[0].querySelector('[aria-label*="Actions"]') as HTMLElement | null;
+          t.assert(menuBtn !== null, "the client row should have an actions menu");
+          await t.clickEl(menuBtn!);
+          await t.waitForText("Statement (PDF)");
+          t.keyDoc("Escape");
+        },
+      },
+      {
+        name: "Expense form accepts a receipt image",
+        fn: async (t) => {
+          await t.nav("#/app/expenses");
+          await t.clickText("Add expense");
+          const d = await dialog(t, "Log an expense");
+          const fileInput = d.querySelector('input[type="file"]') as HTMLInputElement | null;
+          t.assert(fileInput !== null, "the expense form should expose a receipt file input");
+          await closeTopDialog(t);
+        },
+      },
+      {
+        name: "Duplicating an invoice issues a fresh number",
+        fn: async (t) => {
+          const before = t.store().invoices.length;
+          const inv = t.store().invoices[0];
+          await t.nav(`#/app/invoices/${inv.id}`);
+          const menu = [...document.querySelectorAll("main [aria-label*='More actions']")][0] as HTMLElement | undefined;
+          t.assert(menu !== undefined, "the detail page should have a more-actions menu");
+          await t.clickEl(menu!);
+          await t.clickText("Duplicate");
+          await t.wait(400);
+          const after = t.store().invoices;
+          t.assert(after.length === before + 1, "a duplicate should be created");
+          const copy = after[after.length - 1];
+          t.assert(copy.number !== inv.number, "the duplicate should get its own number");
+          t.assert(copy.status === "draft", "the duplicate should start as a draft");
+        },
+      },
+    ],
+  },
+
+  {
     name: "Mega stress — 1000 / 1000 / 1000 / 1000 / 100",
     tests: [
       {
@@ -610,17 +705,6 @@ export const SUITES: SuiteDef[] = [
         },
       },
       {
-        name: "Team mode toggle reflects in the store",
-        fn: async (t) => {
-          await t.nav("#/app/team");
-          const before = t.store().collab.enabled;
-          await t.switchByLabel("team mode", !before);
-          t.assert(t.store().collab.enabled === !before, "team mode should toggle");
-          await t.switchByLabel("team mode", before);
-          t.assert(t.store().collab.enabled === before, "team mode should toggle back");
-        },
-      },
-      {
         name: "Landing renders with the demo clock and CTA",
         fn: async (t) => {
           await t.nav("#/");
@@ -664,7 +748,7 @@ export const SUITES: SuiteDef[] = [
           const routes = [
             "#/", "#/app", "#/app/timer", "#/app/entries", "#/app/projects", "#/app/clients",
             "#/app/invoices", "#/app/expenses", "#/app/estimates", "#/app/reports", "#/app/review",
-            "#/app/team", "#/app/sync", "#/app/import", "#/app/settings",
+            "#/app/calendar", "#/app/sync", "#/app/import", "#/app/settings",
           ];
           for (const r of routes) {
             await t.nav(r);

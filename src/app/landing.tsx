@@ -556,7 +556,7 @@ function Footer() {
       links: [
         { label: "Import your data", href: "#/app/import" },
         { label: "Sync across devices", href: "#/app/sync" },
-        { label: "Team collaboration", href: "#/app/team" },
+        { label: "Calendar import", href: "#/app/calendar" },
       ],
     },
     {

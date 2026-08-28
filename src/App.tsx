@@ -20,7 +20,7 @@ const ReviewPage = lazy(() => import("./app/review").then((m) => ({ default: m.R
 const SettingsPage = lazy(() => import("./app/settings").then((m) => ({ default: m.SettingsPage })));
 const SyncPage = lazy(() => import("./app/sync").then((m) => ({ default: m.SyncPage })));
 const ImportPage = lazy(() => import("./app/import").then((m) => ({ default: m.ImportPage })));
-const TeamPage = lazy(() => import("./app/team").then((m) => ({ default: m.TeamPage })));
+const CalendarPage = lazy(() => import("./app/calendar").then((m) => ({ default: m.CalendarPage })));
 const TestsPage = lazy(() => import("./app/tests").then((m) => ({ default: m.TestsPage })));
 
 function PageLoader() {
@@ -53,7 +53,7 @@ function AppPages({ path }: { path: string }) {
   if (path.startsWith("#/app/estimates")) return <EstimatesPage />;
   if (path.startsWith("#/app/reports")) return <ReportsPage />;
   if (path.startsWith("#/app/review")) return <ReviewPage />;
-  if (path.startsWith("#/app/team")) return <TeamPage />;
+  if (path.startsWith("#/app/calendar")) return <CalendarPage />;
   if (path.startsWith("#/app/sync")) return <SyncPage />;
   if (path.startsWith("#/app/import")) return <ImportPage />;
   if (path.startsWith("#/app/tests")) return <TestsPage />;

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useStore } from "../lib/store";
 import { autoPush } from "../lib/sync";
-import { computeMerge, validateSharedFile, broadcastChange, onRemoteTabChange } from "../lib/collab";
 import { chime } from "../lib/platform";
 import { undoLast, redoLast } from "../lib/undo";
 import { I, Logo, type IconName } from "../components/icons";
@@ -29,6 +28,7 @@ const NAV: Array<{ title: string; items: Array<{ to: string; label: string; icon
     items: [
       { to: "#/app/timer", label: "Timer", icon: "timer" },
       { to: "#/app/entries", label: "Time entries", icon: "list" },
+      { to: "#/app/calendar", label: "Calendar", icon: "cal" },
       { to: "#/app/projects", label: "Projects", icon: "briefcase" },
       { to: "#/app/clients", label: "Clients", icon: "users" },
     ],
@@ -40,10 +40,6 @@ const NAV: Array<{ title: string; items: Array<{ to: string; label: string; icon
       { to: "#/app/estimates", label: "Estimates", icon: "quote" },
       { to: "#/app/expenses", label: "Expenses", icon: "receipt" },
     ],
-  },
-  {
-    title: "Collaborate",
-    items: [{ to: "#/app/team", label: "Team", icon: "share" }],
   },
   {
     title: "System",
@@ -67,7 +63,7 @@ const TITLES: Array<[string, string]> = [
   ["#/app/expenses", "Expenses"],
   ["#/app/reports", "Reports"],
   ["#/app/review", "Year in review"],
-  ["#/app/team", "Team"],
+  ["#/app/calendar", "Calendar"],
   ["#/app/sync", "Sync & backup"],
   ["#/app/import", "Import data"],
   ["#/app/tests", "Test bench"],
@@ -84,41 +80,6 @@ function AutoSyncRunner() {
     const id = window.setInterval(() => void autoPush(active), Math.max(1, intervalMin) * 60_000);
     return () => window.clearInterval(id);
   }, [enabled, intervalMin, active]);
-  return null;
-}
-
-/** Merges teammates' changes and broadcasts this tab's edits. */
-function CollabRunner() {
-  const enabled = useStore((s) => s.collab.enabled);
-  useEffect(() => {
-    if (!enabled) return;
-    const apply = (raw: unknown) => {
-      try {
-        const file = validateSharedFile(raw);
-        const result = computeMerge(file, new Date().toISOString());
-        useStore.getState().applyCollabMerge(result);
-      } catch {
-        /* corrupted peer payload — ignore, keep local */
-      }
-    };
-    const stop = onRemoteTabChange((file) => apply(file));
-    // ledger changes → tell other tabs (debounced by a simple ref gate)
-    let pending = false;
-    const unsub = useStore.subscribe((s, prev) => {
-      if (s.entries !== prev.entries || s.invoices !== prev.invoices || s.clients !== prev.clients) {
-        if (pending) return;
-        pending = true;
-        setTimeout(() => {
-          pending = false;
-          broadcastChange();
-        }, 400);
-      }
-    });
-    return () => {
-      stop();
-      unsub();
-    };
-  }, [enabled]);
   return null;
 }
 
@@ -308,7 +269,6 @@ export function Shell({ path, children }: { path: string; children: ReactNode })
         />
       </div>
       <AutoSyncRunner />
-      <CollabRunner />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
@@ -333,7 +293,6 @@ export function Shell({ path, children }: { path: string; children: ReactNode })
           <IconButton label="Open menu" name="menu" className="lg:hidden" onClick={() => setDrawer(true)} />
           <h1 className="min-w-0 flex-1 truncate font-display text-lg font-bold text-ink">{title}</h1>
           <TimerChip />
-          <TeamPresence />
           <ThemeToggle />
         </div>
       </header>
@@ -428,44 +387,6 @@ function TimerChip() {
     >
       <span className="pulse-dot h-2 w-2 rounded-full bg-amber" />
       {fmtH(min)}
-    </button>
-  );
-}
-
-function TeamPresence() {
-  const enabled = useStore((s) => s.collab.enabled);
-  const peers = useStore((s) => s.collab.peers);
-  const peerName = useStore((s) => s.collab.peerName);
-  const peerColor = useStore((s) => s.collab.peerColor);
-  const peerId = useStore((s) => s.collab.peerId);
-  const [, tick] = useState(0);
-  useEffect(() => {
-    if (!enabled) return;
-    const id = window.setInterval(() => tick((t) => t + 1), 15000);
-    return () => window.clearInterval(id);
-  }, [enabled]);
-  if (!enabled) return null;
-  const cutoff = Date.now() - 5 * 60000;
-  const live = peers.filter((p) => Date.parse(p.at) > cutoff);
-  return (
-    <button
-      onClick={() => navigate("#/app/team")}
-      className="flex items-center -space-x-1.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-surface2"
-      aria-label={`Team — ${live.length} online, open Team page`}
-      title={`Team — ${live.length} online`}
-    >
-      {live.slice(0, 4).map((p) => (
-        <span
-          key={p.id}
-          className={cx("flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface text-[10px] font-bold text-white", p.id === peerId && "ring-2 ring-accent/60")}
-          style={{ background: p.color }}
-        >
-          {(p.id === peerId ? peerName : p.name).slice(0, 1).toUpperCase()}
-        </span>
-      ))}
-      {live.length === 0 && (
-        <span className="flex h-6 items-center px-2 text-[11.5px] font-semibold text-muted">just you</span>
-      )}
     </button>
   );
 }

@@ -38,12 +38,14 @@ export function EntryFormModal({
   entry,
   presetProjectId,
   presetDate,
+  presetDescription,
 }: {
   open: boolean;
   onClose: () => void;
   entry: TimeEntry | null;
   presetProjectId?: string | null;
   presetDate?: string | null;
+  presetDescription?: string | null;
 }) {
   const projects = useStore((s) => s.projects);
   const tasks = useStore((s) => s.tasks);
@@ -76,13 +78,13 @@ export function EntryFormModal({
       const pid = presetProjectId ?? projects.find((p) => p.active)?.id ?? "";
       setProjectId(pid);
       setTaskId("");
-      setDescription("");
+      setDescription(presetDescription ?? "");
       setDate(presetDate ?? todayKey());
       setDuration("");
       setBillable(true);
       setRate(String(projects.find((p) => p.id === pid)?.rate ?? 0));
     }
-  }, [open, entry, presetProjectId, presetDate, projects]);
+  }, [open, entry, presetProjectId, presetDate, presetDescription, projects]);
 
   const projectTasks = tasks.filter((t) => t.projectId === projectId);
 

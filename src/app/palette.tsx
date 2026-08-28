@@ -48,7 +48,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       { id: "p-expenses", group: "Pages", icon: "receipt", label: "Go to Expenses", run: go("#/app/expenses") },
       { id: "p-reports", group: "Pages", icon: "chart", label: "Go to Reports", run: go("#/app/reports") },
       { id: "p-review", group: "Pages", icon: "award", label: "Go to Year review", run: go("#/app/review") },
-      { id: "p-team", group: "Pages", icon: "share", label: "Go to Team", run: go("#/app/team") },
+      { id: "p-calendar", group: "Pages", icon: "cal", label: "Go to Calendar", run: go("#/app/calendar") },
       { id: "p-sync", group: "Pages", icon: "sync", label: "Go to Sync & backup", run: go("#/app/sync") },
       { id: "p-import", group: "Pages", icon: "upload", label: "Go to Import", run: go("#/app/import") },
       { id: "p-settings", group: "Pages", icon: "gear", label: "Go to Settings", run: go("#/app/settings") },

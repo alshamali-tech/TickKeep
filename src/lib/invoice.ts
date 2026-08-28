@@ -202,8 +202,9 @@ export async function invoicePdf(
   business: Business,
   templateId: InvoiceTemplateId = "ledger",
   accentHex: string = "#0D6E52",
-  paymentDetails: string = ""
-): Promise<void> {
+  paymentDetails: string = "",
+  asBlob?: boolean
+): Promise<Blob | void> {
   const { jsPDF } = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");
   const doc = new jsPDF({ unit: "mm", format: "a4" });
@@ -398,6 +399,7 @@ export async function invoicePdf(
   doc.setTextColor(...GRAY);
   doc.text("Generated with TimeVault — free, offline-first invoicing.", W / 2, 288, { align: "center" });
 
+  if (asBlob) return doc.output("blob");
   doc.save(`${inv.number}.pdf`);
 }
 

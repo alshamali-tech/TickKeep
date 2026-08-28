@@ -556,6 +556,17 @@ function flushPersistNow(): void {
 /** Force any pending persistence to disk (used before exports & sync pushes). */
 export const flushPersist = flushPersistNow;
 
+/** Drop the in-memory pending-write buffer without touching disk — models a
+ *  real restart (module re-evaluation), where only what reached disk survives.
+ *  Used by the E2E bench's relaunch simulation. */
+export function resetPersistBuffer(): void {
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  pendingWrite = null;
+}
+
 /* Debounced: burst mutations (imports, bulk edits, mega seeds) coalesce into
  * one localStorage write instead of one per set(). Reads stay consistent via
  * the pending buffer; pagehide flushes so nothing is lost on close. */

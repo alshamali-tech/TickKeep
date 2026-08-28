@@ -25,7 +25,7 @@ npm run preview  # serve the production build locally
 - **Hash routing** (`#/app/...`) — works on any static host with zero rewrite rules
 - **PWA** — manifest + network-first service worker with the `SKIP_WAITING` update handshake; user data is *never* in the SW cache
 - **Sync/Team** — one JSON file (`timevault-backup.json`) moved between devices via the File System Access API (Drive/OneDrive folders) or WebDAV; merge-based (union adds, last-write-wins with deterministic tiebreak, tombstoned deletes, max invoice numbering) — no relay server
-- **In-app E2E bench** (`#/app/tests`) — 30+ cases including a 1000-client / 1000-project / 1000-invoice / 100-teammate stress run; snapshots and restores your data
+- **In-app E2E bench** (`#/app/tests`) — 45+ cases across 8 suites (billing, imports, settings, palette, a11y…) including a 1000-client / 1000-project / 1000-invoice / 100-teammate stress run; snapshots and restores your data, survives mid-run navigation
 
 ## Testing
 

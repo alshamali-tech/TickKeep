@@ -352,7 +352,11 @@ export function Segmented<T extends string>({
   options: Array<{ value: T; label: string }>;
 }) {
   return (
-    <div className="flex min-w-0 items-center gap-1 rounded-lg border border-line bg-surface p-0.5" role="group" aria-label={label}>
+    <div
+      className="flex max-w-full min-w-0 items-center gap-1 overflow-x-auto rounded-lg border border-line bg-surface p-0.5"
+      role="group"
+      aria-label={label}
+    >
       {options.map((o) => (
         <button
           key={o.value}
@@ -360,7 +364,7 @@ export function Segmented<T extends string>({
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
           className={cx(
-            "rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-all",
+            "shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-all",
             value === o.value ? "bg-accent/12 text-accent" : "text-muted hover:text-ink"
           )}
         >

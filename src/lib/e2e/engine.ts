@@ -249,6 +249,136 @@ export async function runSuite(
   }
 }
 
+/* ---------------- module-level bench runner ----------------
+ * Test cases navigate the app to other routes, which UNMOUNTS the bench
+ * page — so the run cannot live in component state. This store survives
+ * navigation; the bench re-subscribes whenever it (re)mounts and always
+ * shows live progress and final results. */
+
+export interface LogLine {
+  t: string;
+  kind: "info" | "suite" | "pass" | "fail" | "done";
+  text: string;
+}
+
+export interface BenchState {
+  running: boolean;
+  aborted: boolean;
+  results: TestResult[];
+  log: LogLine[];
+  current: string | null;
+  lastRunAt: string | null;
+}
+
+const stamp = () => new Date().toLocaleTimeString("en-GB", { hour12: false });
+
+let bench: BenchState = {
+  running: false,
+  aborted: false,
+  results: [],
+  log: [],
+  current: null,
+  lastRunAt: null,
+};
+const benchListeners = new Set<() => void>();
+
+const setBench = (patch: Partial<BenchState>): void => {
+  bench = { ...bench, ...patch };
+  benchListeners.forEach((l) => l());
+};
+
+export const getBench = (): BenchState => bench;
+export const subscribeBench = (l: () => void): (() => void) => {
+  benchListeners.add(l);
+  return () => {
+    benchListeners.delete(l);
+  };
+};
+export const abortBench = (): void => setBench({ aborted: true });
+
+const pushLog = (kind: LogLine["kind"], text: string): void =>
+  setBench({ log: [...bench.log.slice(-600), { t: stamp(), kind, text }] });
+
+function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const id = window.setTimeout(
+      () => reject(new Error(`timed out after ${Math.round(ms / 1000)}s (${what})`)),
+      ms
+    );
+    p.then(
+      (v) => {
+        window.clearTimeout(id);
+        resolve(v);
+      },
+      (e) => {
+        window.clearTimeout(id);
+        reject(e);
+      }
+    );
+  });
+}
+
+/** Close stray dialogs and return to neutral ground between suites. */
+async function settle(): Promise<void> {
+  for (const target of [document.activeElement as HTMLElement | null, document.body]) {
+    target?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  }
+  if (!window.location.hash.startsWith("#/app/tests")) window.location.hash = "#/app";
+  await sleep(260);
+}
+
+export async function runAllBench(suites: SuiteDef[]): Promise<void> {
+  if (bench.running) return;
+  setBench({ running: true, aborted: false, results: [], log: [], current: null });
+  pushLog("info", "Snapshot of local data taken — it will be restored after the run.");
+  const restore = snapshotAndReset();
+  pushLog("info", "Store reset to a fresh ledger for deterministic runs.");
+  const t = new Ctx();
+  try {
+    for (const suite of suites) {
+      if (bench.aborted) break;
+      pushLog("suite", suite.name);
+      for (const test of suite.tests) {
+        if (bench.aborted) break;
+        setBench({ current: `${suite.name} › ${test.name}` });
+        const t0 = performance.now();
+        try {
+          await withTimeout(test.fn(t), 12000, test.name);
+          const r: TestResult = { suite: suite.name, name: test.name, status: "pass", ms: Math.round(performance.now() - t0) };
+          setBench({ results: [...bench.results, r] });
+          pushLog("pass", `✓ ${test.name} (${r.ms}ms)`);
+        } catch (e) {
+          const r: TestResult = {
+            suite: suite.name,
+            name: test.name,
+            status: "fail",
+            ms: Math.round(performance.now() - t0),
+            error: e instanceof Error ? e.message : String(e),
+          };
+          setBench({ results: [...bench.results, r] });
+          pushLog("fail", `✗ ${test.name} — ${r.error}`);
+        }
+      }
+      await settle();
+    }
+  } catch (e) {
+    pushLog("fail", `Runner error — ${e instanceof Error ? e.message : String(e)}`);
+  } finally {
+    await settle();
+    restore();
+    const passed = bench.results.filter((r) => r.status === "pass").length;
+    const failed = bench.results.length - passed;
+    setBench({ running: false, current: null, lastRunAt: stamp() });
+    pushLog(
+      "done",
+      bench.aborted
+        ? `Aborted — ${passed} passed, ${failed} failed up to that point. Your data was restored.`
+        : `Done — ${passed} passed, ${failed} failed. Your data was restored.`
+    );
+    if (!window.location.hash.startsWith("#/app/tests")) window.location.hash = "#/app/tests";
+  }
+}
+
 /* Snapshot the live ledger (memory + disk) and reset to a fresh state.
  * Returns a restore function that puts everything back. */
 export function snapshotAndReset(): () => void {

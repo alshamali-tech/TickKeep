@@ -157,12 +157,12 @@ export const SUITES: SuiteDef[] = [
           await t.nav("#/app/invoices");
           await t.clickText("New invoice");
           const d = await dialog(t, "New invoice");
-          const box = d.querySelector('input[type="checkbox"]') as HTMLInputElement;
+          const box = d.querySelector('[role="checkbox"]') as HTMLElement | null;
           t.assert(box, "unbilled entries should be selectable");
-          box.click();
+          await t.clickEl(box as HTMLElement);
           await t.wait(150);
           await t.clickText("Create draft");
-          await t.wait(350);
+          await t.wait(400);
           t.assert(t.store().invoices.length === before + 1, "a draft invoice should be created");
           await closeTopDialog(t);
         },

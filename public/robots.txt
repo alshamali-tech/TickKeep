@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /app
+
+Sitemap: https://timevault.app/sitemap.xml

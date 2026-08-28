@@ -1,0 +1,24 @@
+{
+  "name": "TimeVault — Offline Time Tracker & Invoices",
+  "short_name": "TimeVault",
+  "description": "Free, offline-first time tracking and invoicing. No account. No cloud. Your data stays on your device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0D6E52",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

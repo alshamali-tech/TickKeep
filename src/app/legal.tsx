@@ -25,32 +25,32 @@ const PRIVACY = [
   {
     h: "The short version",
     ps: [
-      "TimeVault collects nothing. No analytics, no cookies, no tracking pixels, no accounts, no telemetry. There is no server for us to store anything on — the entire application is static files.",
+      "TickKeep collects nothing. No analytics, no cookies, no tracking pixels, no accounts, no telemetry. There is no server for us to store anything on — the entire application is static files.",
     ],
   },
   {
     h: "Where your data lives",
     ps: [
       "Everything you enter — time entries, clients, projects, invoices, expenses, settings — is stored exclusively in your browser's local storage (IndexedDB/localStorage). It never leaves your device unless you explicitly export or sync it.",
-      "If you connect a sync destination (a Drive folder, OneDrive folder, or your own server), the backup file is written to that storage, which you control. TimeVault never reads it back into any server of ours, because we have none.",
+      "If you connect a sync destination (a Google Drive, OneDrive, or local folder), the backup file is written to that storage, which you control. TickKeep never reads it back into any server of ours, because we have none.",
     ],
   },
   {
     h: "External requests",
     ps: [
-      "The only third-party call TimeVault can make is to open.er-api.com for exchange rates, and only when you open a currency-aware view (like the Expenses report). It sends no personal data — just a request for public rates — and is attributed in Settings → About. If you never use multi-currency features, zero external calls are ever made.",
+      "The only third-party call TickKeep can make is to open.er-api.com for exchange rates, and only when you open a currency-aware view (like the Expenses report). It sends no personal data — just a request for public rates — and is attributed in Settings → About. If you never use multi-currency features, zero external calls are ever made.",
     ],
   },
   {
     h: "Export, import, delete",
     ps: [
-      "Your data is portable by design. Settings → Data lets you export everything as JSON, import it back on any device, or permanently clear the ledger. Clearing your browser data also clears TimeVault, so keep a backup you trust.",
+      "Your data is portable by design. Settings → Data lets you export everything as JSON, import it back on any device, or permanently clear the ledger. Clearing your browser data also clears TickKeep, so keep a backup you trust.",
     ],
   },
   {
     h: "Children",
     ps: [
-      "TimeVault collects no data from anyone, so there is no age restriction and no COPPA concern.",
+      "TickKeep collects no data from anyone, so there is no age restriction and no COPPA concern.",
     ],
   },
   {
@@ -65,25 +65,25 @@ const TERMS = [
   {
     h: "What this is",
     ps: [
-      "TimeVault is a free, open-source time tracking and invoicing tool that runs entirely in your web browser. No account is required. These terms govern your use of the software.",
+      "TickKeep is a free time tracking and invoicing tool that runs entirely in your web browser, licensed under the TickKeep EULA. No account is required. These terms govern your use of the software.",
     ],
   },
   {
     h: "No account, your responsibility",
     ps: [
-      "Because there are no accounts, you are solely responsible for your data: making backups, exporting before clearing browser data, and verifying invoices before sending them to clients. TimeVault cannot recover data that is deleted from your device, because it never had a copy.",
+      "Because there are no accounts, you are solely responsible for your data: making backups, exporting before clearing browser data, and verifying invoices before sending them to clients. TickKeep cannot recover data that is deleted from your device, because it never had a copy.",
     ],
   },
   {
     h: "Provided as-is",
     ps: [
-      'TimeVault is provided "as is" and "as available", without warranty of any kind, express or implied — including accuracy of calculations, fitness for a particular purpose, or uninterrupted availability. Verify totals on invoices before relying on them.',
+      'TickKeep is provided "as is" and "as available", without warranty of any kind, express or implied — including accuracy of calculations, fitness for a particular purpose, or uninterrupted availability. Verify totals on invoices before relying on them.',
     ],
   },
   {
     h: "Donations",
     ps: [
-      "Donations via Ko-fi, Buy Me a Coffee or PayPal are voluntary gifts. They confer no rights, unlock nothing, are non-refundable, and are never required. There is no feature gating, trial pressure or obligation of any kind.",
+      "Donations via Ko-fi are voluntary gifts. They confer no rights, unlock nothing, are non-refundable, and are never required. There is no feature gating, trial pressure or obligation of any kind.",
     ],
   },
   {
@@ -95,19 +95,19 @@ const TERMS = [
   {
     h: "Intellectual property",
     ps: [
-      "TimeVault is original software licensed under the TimeVault End-User License Agreement (EULA); all rights are reserved by the Licensor. It is not affiliated with, endorsed by, or connected to any other time tracking product. References to alternatives are for identification only.",
+      "TickKeep is original software licensed under the TickKeep End-User License Agreement (EULA); all rights are reserved by the Licensor. It is not affiliated with, endorsed by, or connected to any other time tracking product. References to alternatives are for identification only.",
     ],
   },
   {
     h: "Limitation of liability",
     ps: [
-      "To the maximum extent permitted by law, TimeVault and its authors are not liable for indirect, incidental or consequential damages, including lost data, lost revenue or lost profits, arising from the use of the software.",
+      "To the maximum extent permitted by law, TickKeep and its authors are not liable for indirect, incidental or consequential damages, including lost data, lost revenue or lost profits, arising from the use of the software.",
     ],
   },
   {
     h: "The rest",
     ps: [
-      "These terms are the entire agreement regarding your use of TimeVault. If any provision is unenforceable, the remainder stays in effect. Amendments are posted on this page. And that's genuinely all of it — no page forty-seven.",
+      "These terms are the entire agreement regarding your use of TickKeep. If any provision is unenforceable, the remainder stays in effect. Amendments are posted on this page. And that's genuinely all of it — no page forty-seven.",
     ],
   },
 ];
@@ -117,14 +117,14 @@ export function LegalPage({ kind }: { kind: "privacy" | "terms" }) {
   const title = kind === "privacy" ? "Privacy Policy" : "Terms of Service";
   const intro =
     kind === "privacy"
-      ? "TimeVault is built local-first, which makes this policy unusually short: there is no server, so there is nothing for us to collect, store, sell or leak."
+      ? "TickKeep is built local-first, which makes this policy unusually short: there is no server, so there is nothing for us to collect, store, sell or leak."
       : "Plain-language terms for a plain-language tool. The gist: it's free, it's yours, it runs on your machine, and we promise very little because we can barely break anything.";
 
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
-          <a href="#/" aria-label="TimeVault home" className="transition-opacity hover:opacity-85">
+          <a href="#/" aria-label="TickKeep home" className="transition-opacity hover:opacity-85">
             <Logo size={30} withWord />
           </a>
           <a
@@ -159,7 +159,9 @@ export function LegalPage({ kind }: { kind: "privacy" | "terms" }) {
         </div>
 
         <p className="mt-12 border-t border-line pt-6 text-[13px] text-muted">
-          Questions? The honest answer is probably already above. TimeVault · free to use · All Rights Reserved.
+          Questions? The honest answer is probably already above — or write to{" "}
+          <a href="mailto:mamoonalshamali@gmail.com" className="font-semibold text-accent hover:underline">mamoonalshamali@gmail.com</a>.
+          {" "}TickKeep · free to use · All Rights Reserved.
         </p>
       </main>
     </div>

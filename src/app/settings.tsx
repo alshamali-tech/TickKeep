@@ -474,13 +474,13 @@ function DataTab() {
         <h2 className="font-display text-lg font-bold text-ink">Your data</h2>
         <p className="mt-1 text-sm text-muted">
           Everything lives in this browser's storage — currently about <strong className="font-semibold text-ink">{size}</strong>.
-          Export regularly; clearing browser data clears TimeVault.
+          Export regularly; clearing browser data clears TickKeep.
         </p>
         <div className="mt-5 flex flex-wrap gap-2.5">
           <Button
             icon="download"
             onClick={() => {
-              downloadFile(`timevault-backup-${todayKey()}.json`, exportData(), "application/json");
+              downloadFile(`tickkeep-backup-${todayKey()}.json`, exportData(), "application/json");
               push({ kind: "ok", title: "Backup downloaded", desc: "Keep it somewhere safe." });
             }}
           >
@@ -545,7 +545,7 @@ function DataTab() {
       <ConfirmDialog
         open={confirmClear}
         onClose={() => setConfirmClear(false)}
-        title="Clear ALL TimeVault data?"
+        title="Clear ALL TickKeep data?"
         desc="Every client, project, entry, invoice and expense on this device will be permanently deleted. Export a backup first if you're unsure."
         confirmLabel="Delete everything"
         onConfirm={() => {
@@ -561,8 +561,6 @@ function DataTab() {
 
 const DONATIONS = [
   { label: "Ko-fi", href: "https://ko-fi.com/mammonalshamali" },
-  { label: "Buy Me a Coffee", href: "https://buymeacoffee.com/timevault" },
-  { label: "PayPal", href: "https://paypal.me/timevault" },
 ];
 
 function AboutTab() {
@@ -571,7 +569,7 @@ function AboutTab() {
       <Card className="p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-lg font-bold text-ink">About TimeVault</h2>
+            <h2 className="font-display text-lg font-bold text-ink">About TickKeep</h2>
             <p className="mt-1 font-mono text-[12.5px] text-muted">v1.0.0 · EULA licensed · static, serverless, yours</p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-ok/10 px-3 py-1 text-[12.5px] font-semibold text-ok">
@@ -579,7 +577,7 @@ function AboutTab() {
           </span>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-ink2">
-          TimeVault is a free, offline-first time tracker and invoice generator for freelancers and tiny studios.
+          TickKeep is a free, offline-first time tracker and invoice generator for freelancers and tiny studios.
           All data stays in your browser; exports are one click away.
         </p>
         <ul className="mt-4 space-y-2 text-sm text-ink2">
@@ -608,7 +606,7 @@ function AboutTab() {
           <div className="min-w-0">
             <h2 className="font-display text-lg font-bold text-ink">Keep the lights on</h2>
             <p className="mt-1 text-sm leading-relaxed text-ink2">
-              TimeVault is free to use and has no investors. If it's earning you money, consider chipping in.
+              TickKeep is free to use and has no investors. If it's earning you money, consider chipping in.
               If not, keep using it — that's the whole deal.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -620,13 +618,46 @@ function AboutTab() {
                   rel="noopener noreferrer"
                   className="inline-flex h-10 items-center gap-2 rounded-lg bg-amber px-4 text-sm font-semibold text-onamber shadow-sm transition-all hover:opacity-90 active:scale-[0.98]"
                 >
-                  <I name={dn.label === "PayPal" ? "wallet" : "coffee"} size={15} />
+                  <I name="coffee" size={15} />
                   {dn.label}
                   <I name="ext" size={12} />
                 </a>
               ))}
             </div>
             <p className="mt-3 text-[12.5px] text-muted">No obligation, no guilt. Just an open tip jar.</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-5 sm:p-6">
+        <div className="flex items-start gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent">
+            <I name="mail" size={21} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-bold text-ink">Bugs & feature ideas</h2>
+            <p className="mt-1 text-sm leading-relaxed text-ink2">
+              Found something broken, or wish TickKeep did one more thing? Tell me directly — it shapes what gets built next.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <a
+                href="mailto:mamoonalshamali@gmail.com?subject=TickKeep%20%E2%80%94%20bug%20or%20feature%20idea"
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-ink transition-all hover:border-accent/60 hover:text-accent active:scale-[0.98]"
+              >
+                <I name="mail" size={15} />
+                mamoonalshamali@gmail.com
+              </a>
+              <a
+                href="https://www.linkedin.com/in/mammon-alshamali-366b10406/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-ink transition-all hover:border-accent/60 hover:text-accent active:scale-[0.98]"
+              >
+                <I name="users" size={15} />
+                LinkedIn
+                <I name="ext" size={12} />
+              </a>
+            </div>
           </div>
         </div>
       </Card>

@@ -52,12 +52,25 @@ function TopBar() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <a href="#/" aria-label="TimeVault home"><Logo size={30} withWord /></a>
+        <a href="#/" aria-label="TickKeep home"><Logo size={30} withWord /></a>
         <nav className="hidden items-center gap-6 text-sm font-medium text-ink2 md:flex" aria-label="Landing">
-          <a href="#features" className="transition-colors hover:text-ink">Features</a>
-          <a href="#how" className="transition-colors hover:text-ink">How it works</a>
-          <a href="#compare" className="transition-colors hover:text-ink">Compare</a>
-          <a href="#faq" className="transition-colors hover:text-ink">FAQ</a>
+          {(
+            [
+              ["features", "Features"],
+              ["how", "How it works"],
+              ["compare", "Compare"],
+              ["faq", "FAQ"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="group relative transition-colors hover:text-ink"
+            >
+              {label}
+              <span className="absolute -bottom-1 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full" aria-hidden="true" />
+            </button>
+          ))}
         </nav>
         <a
           href="#/app"
@@ -94,7 +107,7 @@ function Hero() {
             <span className="text-accent">Your device.</span>
           </h1>
           <p className="mt-6 max-w-lg text-[16.5px] leading-relaxed text-ink2">
-            TimeVault is the offline-first time tracker and invoice generator for people who bill by
+            TickKeep is the offline-first time tracker and invoice generator for people who bill by
             the hour. Everything lives in your browser — nothing uploads anywhere, and nobody can
             raise the price on you.
           </p>
@@ -312,7 +325,7 @@ function Comparison() {
           </h2>
           <p className="mt-5 max-w-md text-[15px] leading-relaxed text-ink2">
             Paid time trackers are fine software with an uncomfortable business model: your timesheet
-            is the product, and the price is whatever the new owners decide. TimeVault has no owners
+            is the product, and the price is whatever the new owners decide. TickKeep has no owners
             to appease — just a ledger that lives on your machine.
           </p>
         </Reveal>
@@ -322,7 +335,7 @@ function Comparison() {
               <thead>
                 <tr className="border-b border-line bg-surface2/60">
                   <th className="px-5 py-3.5 text-[11.5px] font-bold uppercase tracking-wide text-muted" scope="col"> </th>
-                  <th className="px-5 py-3.5 text-[11.5px] font-bold uppercase tracking-wide text-accent" scope="col">TimeVault</th>
+                  <th className="px-5 py-3.5 text-[11.5px] font-bold uppercase tracking-wide text-accent" scope="col">TickKeep</th>
                   <th className="px-5 py-3.5 text-[11.5px] font-bold uppercase tracking-wide text-muted" scope="col">A typical paid tracker</th>
                 </tr>
               </thead>
@@ -407,7 +420,7 @@ function TheMath() {
                     <p className="mt-1 font-mono text-[12.5px] tabular text-muted">${monthly}/mo · ${yearly.toLocaleString()}/yr</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-[12px] uppercase tracking-wide text-muted">With TimeVault</p>
+                    <p className="font-mono text-[12px] uppercase tracking-wide text-muted">With TickKeep</p>
                     <p className="font-mono text-4xl font-bold tabular leading-tight text-accent sm:text-[44px]">$0</p>
                     <p className="mt-1 font-mono text-[12.5px] tabular text-muted">today</p>
                   </div>
@@ -422,7 +435,7 @@ function TheMath() {
             </h3>
             <p className="mt-3 max-w-md text-[15px] leading-relaxed text-ink2">
               Reviewers constantly complain that the basics are paywalled elsewhere.
-              Every one of these is included in TimeVault today:
+              Every one of these is included in TickKeep today:
             </p>
             <div className="mt-7 overflow-hidden rounded-xl border border-line bg-bg shadow-card">
               <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-line bg-surface2/60 px-5 py-3">
@@ -458,14 +471,15 @@ function TheMath() {
 }
 
 const FAQS = [
-  { q: "Is TimeVault actually free?", a: "Yes — TimeVault is free to use right now, for everyone, with every feature included. There's no account, no card, and no trial clock. Development is funded by optional donations, which are purely a thank-you." },
+  { q: "Is TickKeep actually free?", a: "Yes — TickKeep is free to use right now, for everyone, with every feature included. There's no account, no card, and no trial clock. Development is funded by optional donations, which are purely a thank-you." },
   { q: "Do I need an account?", a: "No. There is no sign-up, no email, no password, no onboarding tour. Open the app and start tracking. Your data is yours alone — we couldn't read it if we tried, because it never leaves your browser." },
-  { q: "Where is my data stored?", a: "In your browser's local storage — a durable, on-device database. Time entries, clients, invoices and settings never touch a TimeVault server. The trade-off: clearing your browser data clears TimeVault, so use Settings → Data to export a JSON backup regularly — or connect the Sync page to a Drive or OneDrive folder, or your own server." },
+  { q: "Where is my data stored?", a: "In your browser's local storage — a durable, on-device database. Time entries, clients, invoices and settings never touch a TickKeep server. The trade-off: clearing your browser data clears TickKeep, so use Settings → Data to export a JSON backup regularly — or connect the Sync page to a Drive or OneDrive folder." },
   { q: "Does it work offline?", a: "Yes. Once loaded, the entire app runs without a connection: the timer, manual entries, invoices, reports. A service worker keeps the shell cached so it even opens offline." },
   { q: "Can I send real invoices to clients?", a: "You can build invoices from unbilled time and expenses, add tax, discounts, notes and payment terms, then download a polished PDF with your business branding. Track status from draft to sent to paid — overdue is flagged automatically." },
-  { q: "I already use another time tracker. Can I move?", a: "Yes. The Import page accepts TimeVault JSON backups and the standard CSV columns most trackers export (date, client, project, task, hours, billable, rate). Your history comes with you." },
-  { q: "Can my team use it together?", a: "Yes — the Team page merges everyone's work through a shared folder or server. Adds are unioned, edits converge, deletions propagate, and no one's hours get clobbered." },
-  { q: "So what's the catch?", a: "There isn't one, but here's the deal in full: TimeVault is free to use for personal and commercial work, donation-funded, and built for independent people. If it saves you money and you feel like buying the developer a coffee, there are links for that. No pressure, ever. The full terms live in the EULA." },
+  { q: "I already use another time tracker. Can I move?", a: "Yes. The Import page accepts TickKeep JSON backups and the standard CSV columns most trackers export (date, client, project, task, hours, billable, rate). Your history comes with you." },
+  { q: "Can I use it on more than one device?", a: "Yes — the Sync page moves one backup file between this browser and a folder you control (a Google Drive or OneDrive desktop-sync folder works great). Pulling never overwrites your data without asking." },
+  { q: "So what's the catch?", a: "There isn't one, but here's the deal in full: TickKeep is free to use for personal and commercial work, donation-funded, and built for independent people. If it saves you money and you feel like buying the developer a coffee, there's a Ko-fi link for that. No pressure, ever. The full terms live in the EULA." },
+  { q: "Found a bug or want a feature?", a: "Tell me directly — email mamoonalshamali@gmail.com or reach out on LinkedIn. Bug reports and ideas from real users shape what gets built next." },
 ];
 
 function FAQ() {
@@ -514,7 +528,7 @@ function DonationBand() {
               Free to use — that's the deal right now.
             </h2>
             <p className="mt-4 text-[15px] leading-relaxed text-ink2">
-              No investors to answer to, no pricing page to optimize. If TimeVault earns you money
+              No investors to answer to, no pricing page to optimize. If TickKeep earns you money
               and you'd like to keep it humming, a coffee goes a long way. If not — use it free.
             </p>
             <div className="mt-6 flex flex-wrap gap-2.5">
@@ -526,7 +540,7 @@ function DonationBand() {
                   rel="noopener noreferrer"
                   className="inline-flex h-11 items-center gap-2 rounded-lg bg-amber px-4.5 text-sm font-semibold text-onamber shadow-sm transition-all hover:opacity-90 active:scale-[0.98]"
                 >
-                  <I name={d.label === "PayPal" ? "wallet" : "coffee"} size={16} />
+                  <I name="coffee" size={16} />
                   {d.label}
                   <I name="ext" size={13} />
                 </a>
@@ -560,6 +574,13 @@ function Footer() {
       ],
     },
     {
+      title: "Contact — bugs & ideas",
+      links: [
+        { label: "mamoonalshamali@gmail.com", href: "mailto:mamoonalshamali@gmail.com?subject=TickKeep%20%E2%80%94%20bug%20or%20feature%20idea" },
+        { label: "LinkedIn ↗", href: "https://www.linkedin.com/in/mammon-alshamali-366b10406/" },
+      ],
+    },
+    {
       title: "Legal",
       links: [
         { label: "Privacy policy", href: "#/privacy" },
@@ -569,9 +590,9 @@ function Footer() {
   ];
   return (
     <footer className="border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr_1fr]">
         <div>
-          <a href="#/" aria-label="TimeVault home"><Logo size={30} withWord /></a>
+          <a href="#/" aria-label="TickKeep home"><Logo size={30} withWord /></a>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
             The offline-first time tracker and invoice generator for independent people.
           </p>
@@ -586,7 +607,13 @@ function Footer() {
             <ul className="mt-3 space-y-2">
               {c.links.map((l) => (
                 <li key={l.label}>
-                  <a href={l.href} className="text-sm font-medium text-ink2 transition-colors hover:text-accent">{l.label}</a>
+                  <a
+                    href={l.href}
+                    {...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    className="text-sm font-medium break-all text-ink2 transition-colors hover:text-accent"
+                  >
+                    {l.label}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -595,9 +622,9 @@ function Footer() {
       </div>
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 sm:px-6">
-          <p className="font-mono text-[11.5px] text-muted">© {new Date().getFullYear()} TimeVault · free to use · All Rights Reserved</p>
+          <p className="font-mono text-[11.5px] text-muted">© {new Date().getFullYear()} TickKeep · free to use · All Rights Reserved</p>
           <a href={DONATIONS[0].href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-amber transition-opacity hover:opacity-80">
-            <I name="heart" size={14} /> Support TimeVault
+            <I name="heart" size={14} /> Support TickKeep on Ko-fi
           </a>
         </div>
       </div>

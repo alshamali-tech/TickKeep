@@ -121,7 +121,7 @@ export function SyncPage() {
         <span>
           Sync moves one file — <code className="rounded bg-surface2 px-1 font-mono text-[12px]">{BACKUP_FILE}</code> — between this
           browser and a folder <strong className="text-ink">you</strong> control: your Google Drive or OneDrive
-          desktop-sync folder, or any folder on this PC. No TimeVault server is ever involved, and pulling never
+          desktop-sync folder, or any folder on this PC. No TickKeep server is ever involved, and pulling never
           overwrites your data without asking.
         </span>
       </p>
@@ -214,7 +214,7 @@ export function SyncPage() {
       </Card>
 
       <p className="flex items-center gap-2 font-mono text-[12px] text-muted">
-        <I name="info" size={13} /> Conflict rule: if the remote backup is newer, TimeVault asks before replacing anything.
+        <I name="info" size={13} /> Conflict rule: if the remote backup is newer, TickKeep asks before replacing anything.
       </p>
 
       <ConfirmDialog

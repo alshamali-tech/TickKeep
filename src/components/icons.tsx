@@ -407,7 +407,7 @@ export function Logo({ size = 30, withWord = false }: { size?: number; withWord?
       </svg>
       {withWord && (
         <span className="font-display font-bold text-lg tracking-tight text-ink whitespace-nowrap">
-          Time<span className="text-accent">Vault</span>
+          Tick<span className="text-accent">Keep</span>
         </span>
       )}
     </span>

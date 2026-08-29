@@ -40,6 +40,13 @@ export class Ctx {
   async nav(hash: string): Promise<void> {
     window.location.hash = hash;
     await sleep(140);
+    /* Lazy routes mount behind a Suspense loader on first visit; wait for the
+     * chunk to resolve so DOM queries below don't race the fallback. */
+    const deadline = Date.now() + 5000;
+    while (document.querySelector('[aria-label="Loading page"]') && Date.now() < deadline) {
+      await sleep(60);
+    }
+    await sleep(60);
   }
 
   q(sel: string): HTMLElement | null {
@@ -100,7 +107,14 @@ export class Ctx {
     await this.clickEl(el as unknown as HTMLElement);
   }
 
-  findText(text: string): HTMLElement | null {
+  /** Click the most recently added match (e.g. the newest toast's action button). */
+  async clickLastText(text: string, timeout = 4000): Promise<void> {
+    let els: HTMLElement[] = [];
+    await poll(() => ((els = this.findAllText(text)), els.length > 0), timeout, `clickable text “${text}”`);
+    await this.clickEl(els[els.length - 1]);
+  }
+
+  findAllText(text: string): HTMLElement[] {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const hits: HTMLElement[] = [];
     let n: Node | null;
@@ -110,6 +124,11 @@ export class Ctx {
         if (el) hits.push(el);
       }
     }
+    return hits;
+  }
+
+  findText(text: string): HTMLElement | null {
+    const hits = this.findAllText(text);
     if (hits.length === 0) return null;
     const main = this.q("main");
     const inMain = hits.filter((h) => main?.contains(h));
@@ -383,7 +402,7 @@ export async function runAllBench(suites: SuiteDef[]): Promise<void> {
  * Returns a restore function that puts everything back. */
 export function snapshotAndReset(): () => void {
   flushPersist();
-  const disk = localStorage.getItem("timevault-v1");
+  const disk = localStorage.getItem("tickkeep-v1");
   const memory = useStore.getState().exportData();
   useStore.setState(createFreshState());
   return () => {
@@ -391,7 +410,7 @@ export function snapshotAndReset(): () => void {
     if (err) {
       // last resort: raw disk restore + rehydrate
       if (disk) {
-        localStorage.setItem("timevault-v1", disk);
+        localStorage.setItem("tickkeep-v1", disk);
         void useStore.persist.rehydrate();
       }
     }

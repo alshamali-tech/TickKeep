@@ -243,15 +243,15 @@ export function ImportPage() {
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent">
             <I name="db" size={19} />
           </span>
-          <h2 className="mt-3 font-display text-lg font-bold text-ink">TimeVault backup</h2>
+          <h2 className="mt-3 font-display text-lg font-bold text-ink">TickKeep backup</h2>
           <p className="mt-1 text-[13px] leading-relaxed text-ink2">
-            Restore a <code className="rounded bg-surface2 px-1 font-mono text-[12px]">timevault-backup-*.json</code> export.
+            Restore a <code className="rounded bg-surface2 px-1 font-mono text-[12px]">tickkeep-backup-*.json</code> export.
             Replaces your current ledger after you confirm.
           </p>
           <Button className="mt-4" icon="upload" onClick={() => jsonRef.current?.click()}>
             Choose backup file
           </Button>
-          <input ref={jsonRef} type="file" accept="application/json,.json" className="hidden" aria-label="Choose TimeVault backup file"
+          <input ref={jsonRef} type="file" accept="application/json,.json" className="hidden" aria-label="Choose TickKeep backup file"
             onChange={(e) => {
               onJsonFile(e.target.files?.[0] ?? null);
               e.target.value = "";

@@ -10,8 +10,6 @@ import { CommandPalette } from "./palette";
 
 export const DONATIONS = [
   { label: "Ko-fi", href: "https://ko-fi.com/mammonalshamali" },
-  { label: "Buy Me a Coffee", href: "https://buymeacoffee.com/timevault" },
-  { label: "PayPal", href: "https://paypal.me/timevault" },
 ];
 
 const NAV: Array<{ title: string; items: Array<{ to: string; label: string; icon: IconName }> }> = [
@@ -94,7 +92,7 @@ function useAppUpdate() {
       notified = true;
       push({
         kind: "info",
-        title: "A new version of TimeVault is ready",
+        title: "A new version of TickKeep is ready",
         desc: "Refresh to update — your tracked data stays exactly where it is.",
         action: { label: "Refresh", onClick: () => window.location.reload() },
       });
@@ -311,7 +309,7 @@ function SidebarContent({ path, onNavigate }: { path: string; onNavigate?: () =>
   return (
     <>
       <div className="flex h-14 items-center border-b border-line px-4">
-        <a href="#/" aria-label="TimeVault home" onClick={onNavigate}>
+        <a href="#/" aria-label="TickKeep home" onClick={onNavigate}>
           <Logo size={28} withWord />
         </a>
       </div>
@@ -356,7 +354,7 @@ function SidebarContent({ path, onNavigate }: { path: string; onNavigate?: () =>
           className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-ink2 transition-colors hover:bg-amber/10 hover:text-ink"
         >
           <I name="heart" size={16} className="text-amber" />
-          <span className="min-w-0 flex-1 truncate">Support TimeVault</span>
+          <span className="min-w-0 flex-1 truncate">Support TickKeep</span>
           <I name="ext" size={13} className="text-muted" />
         </a>
         <p className="px-2.5 pt-2 font-mono text-[10.5px] text-muted">v1.0.0 · free now</p>
@@ -419,21 +417,21 @@ function DonationToast() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("tv-don-bumped")) return;
-    sessionStorage.setItem("tv-don-bumped", "1");
+    if (sessionStorage.getItem("tk-don-bumped")) return;
+    sessionStorage.setItem("tk-don-bumped", "1");
     const current = useStore.getState().donation;
     setDonation({ useCount: current.useCount + 1 });
   }, [setDonation]);
 
   useEffect(() => {
-    if (sessionStorage.getItem("tv-don-shown")) return;
+    if (sessionStorage.getItem("tk-don-shown")) return;
     const d = useStore.getState().donation;
     const cooldownOver =
       !d.lastToastAt || Date.now() - new Date(d.lastToastAt).getTime() > 7 * 24 * 60 * 60 * 1000;
     if (d.useCount >= 5 && cooldownOver) {
       const t = window.setTimeout(() => {
         setVisible(true);
-        sessionStorage.setItem("tv-don-shown", "1");
+        sessionStorage.setItem("tk-don-shown", "1");
         setDonation({ lastToastAt: new Date().toISOString() });
       }, 2500);
       return () => window.clearTimeout(t);
@@ -444,7 +442,7 @@ function DonationToast() {
   return (
     <div role="status" className="anim-toast fixed bottom-4 left-4 z-[75] w-[min(92vw,350px)] rounded-xl border border-amber/40 bg-surface p-4 shadow-pop">
       <div className="flex items-start justify-between gap-3">
-        <p className="font-display text-[15px] font-bold text-ink">TimeVault is free right now.</p>
+        <p className="font-display text-[15px] font-bold text-ink">TickKeep is free right now.</p>
         <button
           aria-label="Dismiss donation message"
           onClick={() => setVisible(false)}
@@ -465,7 +463,7 @@ function DonationToast() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg bg-amber px-3 py-1.5 text-[13px] font-semibold text-onamber transition-opacity hover:opacity-88"
           >
-            <I name={d.label === "PayPal" ? "wallet" : "coffee"} size={13} />
+            <I name="coffee" size={13} />
             {d.label}
           </a>
         ))}

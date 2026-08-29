@@ -82,7 +82,7 @@ export function DashboardPage() {
           </span>
           <h2 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">Your ledger is brand new.</h2>
           <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink2">
-            Add a client, name a project, punch in — and TimeVault will keep the hours, budgets and
+            Add a client, name a project, punch in — and TickKeep will keep the hours, budgets and
             invoices straight. Everything stays in this browser.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
@@ -490,7 +490,7 @@ function AgingCard({ invoices }: { invoices: Invoice[] }) {
 /* ---------------- nudge + setup checklist ---------------- */
 
 function NudgeBanner() {
-  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("tv-nudge-dismissed") === todayKey());
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("tk-nudge-dismissed") === todayKey());
   if (dismissed) return null;
   return (
     <div className="anim-rise relative flex items-center gap-4 overflow-hidden rounded-xl border border-accent/40 bg-accent/8 px-5 py-4">
@@ -510,7 +510,7 @@ function NudgeBanner() {
       <button
         aria-label="Dismiss nudge for today"
         onClick={() => {
-          sessionStorage.setItem("tv-nudge-dismissed", todayKey());
+          sessionStorage.setItem("tk-nudge-dismissed", todayKey());
           setDismissed(true);
         }}
         className="relative rounded-md p-1.5 text-muted transition-colors hover:bg-surface2 hover:text-ink"
@@ -521,7 +521,7 @@ function NudgeBanner() {
   );
 }
 
-const SETUP_DISMISS_KEY = "tv-setup-dismissed";
+const SETUP_DISMISS_KEY = "tk-setup-dismissed";
 
 function SetupChecklist() {
   const business = useStore((s) => s.business);

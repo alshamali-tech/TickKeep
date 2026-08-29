@@ -1,7 +1,7 @@
 /* TimeVault service worker — same-origin network-first with versioned cache
  * fallback, so updates always win but the app still opens offline.
  * Data lives in localStorage/IndexedDB, never in this cache. */
-const CACHE = "timevault-v2";
+const CACHE = "tickkeep-v1";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

@@ -748,7 +748,7 @@ export function EntriesPage() {
         e.billable ? ((e.durationMin / 60) * e.rate).toFixed(2) : "0",
       ]);
     downloadFile(
-      `timevault-entries-${todayKey()}.csv`,
+      `tickkeep-entries-${todayKey()}.csv`,
       toCSV([["Date", "Project", "Description", "Hours", "Billable", "Rate", "Amount"], ...rows]),
       "text/csv"
     );

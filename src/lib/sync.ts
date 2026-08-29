@@ -1,4 +1,4 @@
-/* Cross-device sync: moves one file (timevault-backup.json) between this
+/* Cross-device sync: moves one file (tickkeep-backup.json) between this
  * browser and storage the user already controls — a local/Drive/OneDrive
  * folder via the File System Access API, or the user's own server via WebDAV.
  * Pulls never overwrite local data silently (callers compare timestamps). */
@@ -6,7 +6,7 @@ import { useStore } from "./store";
 
 export type FolderProvider = "device" | "gdrive" | "onedrive";
 
-export const BACKUP_FILE = "timevault-backup.json";
+export const BACKUP_FILE = "tickkeep-backup.json";
 
 export const fsSupported = (): boolean =>
   typeof window !== "undefined" && "showDirectoryPicker" in window;
@@ -23,7 +23,7 @@ export class SyncError extends Error {
 
 /* ---------- IndexedDB store for the persisted directory handle ---------- */
 
-const DB_NAME = "timevault-sync-handles";
+const DB_NAME = "tickkeep-sync-handles";
 const STORE = "handles";
 const HANDLE_KEY = "dir";
 
@@ -122,7 +122,7 @@ export async function chooseFolder(): Promise<string> {
   const picker = (window as unknown as {
     showDirectoryPicker: (opts?: { mode: string; id?: string }) => Promise<DirHandle>;
   }).showDirectoryPicker;
-  const h = await picker({ mode: "readwrite", id: "timevault" });
+  const h = await picker({ mode: "readwrite", id: "tickkeep" });
   dirHandle = h;
   try {
     await idbSet(HANDLE_KEY, h);

@@ -188,7 +188,7 @@ function TimeTab({ ctx, range }: { ctx: AggCtx; range: Range }) {
   const exportCsv = () => {
     const rows = rollupToRows(tree);
     downloadFile(
-      `timevault-time-report-${range.from}-${range.to}.csv`,
+      `tickkeep-time-report-${range.from}-${range.to}.csv`,
       toCSV([["Name", "Level", "Entries", "Hours", "Billable hours", "Billable amount"], ...rows]),
       "text/csv"
     );

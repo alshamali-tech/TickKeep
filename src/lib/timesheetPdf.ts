@@ -88,7 +88,7 @@ export async function timesheetPdf(opts: {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(...GRAY);
-  doc.text("Generated with TimeVault — free, offline-first time tracking.", W / 2, 288, { align: "center" });
+  doc.text("Generated with TickKeep — free, offline-first time tracking.", W / 2, 288, { align: "center" });
 
   doc.save(`timesheet-${weekStartKey}.pdf`);
 }

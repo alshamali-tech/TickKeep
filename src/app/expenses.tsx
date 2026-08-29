@@ -61,7 +61,7 @@ export function ExpensesPage() {
         x.billable ? "Yes" : "No",
       ]),
     ];
-    downloadFile(`timevault-expenses-${todayKey()}.csv`, toCSV(rows), "text/csv");
+    downloadFile(`tickkeep-expenses-${todayKey()}.csv`, toCSV(rows), "text/csv");
     push({ kind: "ok", title: "CSV exported", desc: `${visible.length} expenses` });
   };
 

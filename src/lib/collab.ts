@@ -132,7 +132,7 @@ export interface MergeResult {
 
 export function validateSharedFile(raw: unknown): SharedFile {
   if (!raw || typeof raw !== "object") {
-    throw new CollabError("shape", "The shared file isn't a TimeVault snapshot.");
+    throw new CollabError("shape", "The shared file isn't a TickKeep snapshot.");
   }
   const r = raw as SharedFile;
   const arrays: Array<[string, unknown]> = [
@@ -225,7 +225,7 @@ let channel: BroadcastChannel | null = null;
 
 function chan(): BroadcastChannel | null {
   try {
-    channel = channel ?? new BroadcastChannel("timevault-collab");
+    channel = channel ?? new BroadcastChannel("tickkeep-collab");
     return channel;
   } catch {
     return null;

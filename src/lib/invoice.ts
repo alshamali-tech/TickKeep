@@ -397,7 +397,7 @@ export async function invoicePdf(
   doc.setFont(font, "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(...GRAY);
-  doc.text("Generated with TimeVault — free, offline-first invoicing.", W / 2, 288, { align: "center" });
+  doc.text("Generated with TickKeep — free, offline-first invoicing.", W / 2, 288, { align: "center" });
 
   if (asBlob) return doc.output("blob");
   doc.save(`${inv.number}.pdf`);
@@ -479,7 +479,7 @@ export async function statementPdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(...GRAY);
-  doc.text("Generated with TimeVault.", W / 2, 288, { align: "center" });
+  doc.text("Generated with TickKeep.", W / 2, 288, { align: "center" });
 
   doc.save(`statement-${client.name.replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }
@@ -547,7 +547,7 @@ export function invoiceHtml(
 ${paymentDetails ? `<div class="sec"><b>Payment details</b>${esc(paymentDetails)}</div>` : ""}
 ${inv.notes ? `<div class="sec"><b>Notes</b>${esc(inv.notes)}</div>` : ""}
 ${inv.terms ? `<div class="sec"><b>Terms</b>${esc(inv.terms)}</div>` : ""}
-<footer>Generated with TimeVault — free, offline-first invoicing.</footer>
+<footer>Generated with TickKeep — free, offline-first invoicing.</footer>
 </div></div></body></html>`;
 }
 

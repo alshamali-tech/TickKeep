@@ -1,4 +1,4 @@
-/* TimeVault UI kit — accessible primitives shared by every page. */
+/* TickKeep UI kit — accessible primitives shared by every page. */
 import {
   createContext,
   useCallback,

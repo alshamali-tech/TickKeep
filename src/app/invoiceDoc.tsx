@@ -157,7 +157,7 @@ export function InvoiceDocument({
       </div>
 
       <p className="mt-8 border-t border-line/70 pt-4 text-center text-[10.5px] text-muted">
-        Generated with TimeVault — free, offline-first invoicing.
+        Generated with TickKeep — free, offline-first invoicing.
       </p>
     </>
   );

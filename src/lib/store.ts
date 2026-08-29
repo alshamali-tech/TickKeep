@@ -104,7 +104,7 @@ export interface Payment {
 export type InvoiceTemplateId = "ledger" | "classic" | "bold";
 
 export const INVOICE_TEMPLATES: Array<{ id: InvoiceTemplateId; name: string; desc: string }> = [
-  { id: "ledger", name: "Ledger", desc: "Accent band, modern numerals — the TimeVault look" },
+  { id: "ledger", name: "Ledger", desc: "Accent band, modern numerals — the TickKeep look" },
   { id: "classic", name: "Classic", desc: "Centered letterhead, formal rules — traditional" },
   { id: "bold", name: "Statement", desc: "Dark header block, oversized total — assertive" },
 ];
@@ -499,7 +499,9 @@ export const createFreshState = (): AppData => defaults();
  * factory eagerly while the store initializes, so referencing it later in
  * the module hits a TDZ ReferenceError and silently disables persistence. */
 
-const PERSIST_KEY = "timevault-v1";
+const PERSIST_KEY = "tickkeep-v1";
+/** Pre-rename key — read once so existing users keep their ledger. */
+const LEGACY_PERSIST_KEY = "timevault-v1";
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
 let pendingWrite: string | null = null;
 /** Last persistence failure ("quota" | null) — surfaced by the test bench. */
@@ -561,8 +563,13 @@ export function resetPersistBuffer(): void {
  * one localStorage write instead of one per set(). Reads stay consistent via
  * the pending buffer; pagehide flushes so nothing is lost on close. */
 const debouncedStateStorage = {
-  getItem: (key: string): string | null =>
-    key === PERSIST_KEY && pendingWrite !== null ? pendingWrite : localStorage.getItem(key),
+  getItem: (key: string): string | null => {
+    if (key === PERSIST_KEY && pendingWrite !== null) return pendingWrite;
+    const v = localStorage.getItem(key);
+    if (v) return v;
+    if (key === PERSIST_KEY) return localStorage.getItem(LEGACY_PERSIST_KEY);
+    return null;
+  },
   setItem: (key: string, value: string): void => {
     if (key !== PERSIST_KEY) {
       try {
@@ -1022,7 +1029,7 @@ export const useStore = create<AppState>()(
         }),
 
       importData: (raw) => {
-        if (!raw || typeof raw !== "object") return "That file doesn't look like a TimeVault backup.";
+        if (!raw || typeof raw !== "object") return "That file doesn't look like a TickKeep backup.";
         const r = raw as Record<string, unknown>;
         const required = ["clients", "projects", "tasks", "entries", "invoices", "expenses"];
         for (const k of required) {
@@ -1052,7 +1059,7 @@ export const useStore = create<AppState>()(
         const s = get();
         return JSON.stringify(
           {
-            app: "TimeVault",
+            app: "TickKeep",
             version: 2,
             exportedAt: isoNow(),
             clients: s.clients,
@@ -1086,7 +1093,7 @@ export const useStore = create<AppState>()(
       },
     }),
     {
-      name: "timevault-v1",
+      name: "tickkeep-v1",
       version: 1,
       partialize: (s) => ({
         clients: s.clients,

@@ -31,7 +31,7 @@ export interface RatesInfo {
   fetchedAt: number;
 }
 
-const LS_KEY = "tv-rates";
+const LS_KEY = "tk-rates";
 const TTL_MS = 24 * 60 * 60 * 1000;
 
 export function readRatesCache(): RatesInfo | null {

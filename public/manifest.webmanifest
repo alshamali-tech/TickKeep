@@ -1,6 +1,6 @@
 {
-  "name": "TimeVault — Offline Time Tracker & Invoices",
-  "short_name": "TimeVault",
+  "name": "TickKeep — Offline Time Tracker & Invoices",
+  "short_name": "TickKeep",
   "description": "Free, offline-first time tracking and invoicing. No account. No cloud. Your data stays on your device.",
   "start_url": "./",
   "scope": "./",

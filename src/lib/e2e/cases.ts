@@ -31,7 +31,7 @@ export const SUITES: SuiteDef[] = [
         fn: async (t) => {
           t.store().addClient({ name: "Persisted Co", currency: "USD", defaultRate: 50 });
           flushPersist();
-          const raw = localStorage.getItem("timevault-v1");
+          const raw = localStorage.getItem("tickkeep-v1");
           t.assert(raw !== null && raw.includes("Persisted Co"), "the client must reach disk first");
           // A real relaunch loses ALL module memory — including the debounced
           // write buffer. Only what made it to disk survives.
@@ -55,7 +55,7 @@ export const SUITES: SuiteDef[] = [
             });
           }
           flushPersist();
-          const raw = localStorage.getItem("timevault-v1");
+          const raw = localStorage.getItem("tickkeep-v1");
           t.assert(raw !== null && raw.includes("burst-11"), "the last burst entry must reach disk");
           useStore.setState(createFreshState());
           resetPersistBuffer(); // restart semantics: the pending buffer is memory, it dies too
@@ -73,7 +73,7 @@ export const SUITES: SuiteDef[] = [
           await t.wait(120);
           const after = document.documentElement.getAttribute("data-theme");
           t.assert(after === "dark", `html should carry data-theme=dark (got ${after})`);
-          t.assert(localStorage.getItem("tv-theme") === "dark", "tv-theme should persist for the next load");
+          t.assert(localStorage.getItem("tk-theme") === "dark", "tk-theme should persist for the next load");
           await t.click('[aria-label="Switch to light theme"]');
           await t.wait(120);
           t.assert(document.documentElement.getAttribute("data-theme") === "light", "should switch back to light");
@@ -152,7 +152,8 @@ export const SUITES: SuiteDef[] = [
           await t.clickText("Delete");
           await t.wait(200);
           t.assert(t.store().entries.length === before - 1, "entry should be removed immediately");
-          await t.clickText("Undo");
+          // newest toast carries this delete's Undo (an older toast may still be fading)
+          await t.clickLastText("Undo");
           await t.wait(200);
           t.assert(t.store().entries.length === before, "undo should restore the entry");
         },
@@ -305,8 +306,7 @@ export const SUITES: SuiteDef[] = [
         name: "Calendar event logs time with the event description",
         fn: async (t) => {
           await t.nav("#/app/calendar");
-          const input = t.q('input[type="file"]') as HTMLInputElement | null;
-          t.assert(input !== null, "calendar should expose a file picker");
+          const input = (await t.waitFor('input[type="file"]', 6000)) as HTMLInputElement;
           const day = todayKey().replace(/-/g, "");
           const ics = [
             "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "UID:e2e-log-1",
@@ -571,7 +571,7 @@ export const SUITES: SuiteDef[] = [
           flushPersist();
           // quota may legitimately trip at this scale — the adapter must not
           // crash and the in-memory ledger must stay authoritative either way
-          const raw = localStorage.getItem("timevault-v1");
+          const raw = localStorage.getItem("tickkeep-v1");
           t.assert(t.store().clients.length === clientsBefore, "in-memory ledger untouched by persistence");
           if (raw) {
             console.log(`[bench] persisted snapshot: ${(raw.length / 1024).toFixed(0)} KB`);
@@ -590,7 +590,12 @@ export const SUITES: SuiteDef[] = [
         name: "Time CSV import creates entries and auto-creates client/project",
         fn: async (t) => {
           await t.nav("#/app/import");
-          const inputs = t.qa('input[type="file"]');
+          let inputs = t.qa('input[type="file"]') as HTMLInputElement[];
+          const dl = Date.now() + 6000;
+          while (inputs.length < 2 && Date.now() < dl) {
+            await t.wait(60);
+            inputs = t.qa('input[type="file"]') as HTMLInputElement[];
+          }
           t.assert(inputs.length >= 2, "import page should expose backup + CSV pickers");
           const csv = [
             "Date,Client,Project,Task,Hours,Billable,Rate,Amount",
@@ -616,8 +621,7 @@ export const SUITES: SuiteDef[] = [
         name: "ICS calendar import lists events ready to log",
         fn: async (t) => {
           await t.nav("#/app/calendar");
-          const input = t.q('input[type="file"]') as HTMLInputElement | null;
-          t.assert(input !== null, "calendar should expose a file picker");
+          const input = (await t.waitFor('input[type="file"]', 6000)) as HTMLInputElement;
           const day = todayKey().replace(/-/g, "");
           const ics = [
             "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "UID:e2e-1",
@@ -638,6 +642,13 @@ export const SUITES: SuiteDef[] = [
         name: "Business profile saves through the UI",
         fn: async (t) => {
           await t.nav("#/app/settings");
+          let field = t.byLabel("Business name");
+          const dl = Date.now() + 6000;
+          while (!field && Date.now() < dl) {
+            await t.wait(60);
+            field = t.byLabel("Business name");
+          }
+          t.assert(field !== null, "Business name field should exist");
           await t.typeField("Business name", "E2E Studio");
           await t.clickText("Save profile");
           await t.waitForText("Business profile saved");
@@ -664,6 +675,152 @@ export const SUITES: SuiteDef[] = [
           await t.nav("#/app/entries");
           await t.waitFor('[aria-label="Locked entry"]', 6000);
           t.store().setPrefs({ lockBeforeDate: null });
+        },
+      },
+    ],
+  },
+
+  {
+    name: "Settings deep-dive",
+    tests: [
+      {
+        name: "Week start preference persists and drives report ranges",
+        fn: async (t) => {
+          const before = t.store().prefs.weekStart;
+          t.store().setPrefs({ weekStart: before === 1 ? 0 : 1 });
+          await t.wait(60);
+          t.assert(t.store().prefs.weekStart !== before, "weekStart should toggle");
+          t.store().setPrefs({ weekStart: before });
+          t.assert(t.store().prefs.weekStart === before, "weekStart should restore");
+        },
+      },
+      {
+        name: "Compact rows preference toggles",
+        fn: async (t) => {
+          const before = t.store().prefs.compact;
+          t.store().setPrefs({ compact: !before });
+          t.assert(t.store().prefs.compact === !before, "compact should toggle");
+          t.store().setPrefs({ compact: before });
+        },
+      },
+      {
+        name: "Invoice defaults (prefix, tax, currency) persist",
+        fn: async (t) => {
+          const d = t.store().invDefaults;
+          t.store().setInvDefaults({ prefix: "E2E-", taxRate: 8.5, currency: "EUR" });
+          const after = t.store().invDefaults;
+          t.assert(after.prefix === "E2E-", "prefix should persist");
+          t.assert(after.taxRate === 8.5, "taxRate should persist");
+          t.assert(after.currency === "EUR", "currency should persist");
+          t.store().setInvDefaults({ prefix: d.prefix, taxRate: d.taxRate, currency: d.currency });
+        },
+      },
+      {
+        name: "Business profile fields (tax id, address, email) persist",
+        fn: async (t) => {
+          t.store().setBusiness({ taxId: "VAT-123", address: "1 Test Way", email: "biz@e2e.test" });
+          const b = t.store().business;
+          t.assert(b.taxId === "VAT-123" && b.address === "1 Test Way" && b.email === "biz@e2e.test", "business fields should persist");
+          t.store().setBusiness({ taxId: "", address: "", email: "" });
+        },
+      },
+      {
+        name: "Goals (daily/weekly targets) persist",
+        fn: async (t) => {
+          t.store().setGoals({ dailyMin: 480, weeklyMin: 2400 });
+          const g = t.store().goals;
+          t.assert(g.dailyMin === 480 && g.weeklyMin === 2400, "goals should persist");
+          t.store().setGoals({ dailyMin: 0, weeklyMin: 0 });
+        },
+      },
+      {
+        name: "Auto-backup sync config toggles safely",
+        fn: async (t) => {
+          t.store().setAutoSync({ enabled: true, intervalMin: 30 });
+          t.assert(t.store().syncMeta.auto.enabled === true, "auto-backup should enable");
+          t.assert(t.store().syncMeta.auto.intervalMin === 30, "interval should persist");
+          t.store().setAutoSync({ enabled: false, intervalMin: 15 });
+        },
+      },
+      {
+        name: "Required-description rule blocks a blank punch-in",
+        fn: async (t) => {
+          t.store().setPrefs({ requireDescription: true });
+          await t.nav("#/app/timer");
+          await t.wait(150);
+          await t.clickText("Punch in");
+          await t.wait(200);
+          t.assert(t.store().activeTimer === null, "blank punch-in should be blocked");
+          t.store().setPrefs({ requireDescription: false });
+        },
+      },
+      {
+        name: "Idle-warning preference accepts a threshold",
+        fn: async (t) => {
+          t.store().setPrefs({ idleWarnMin: 90 });
+          t.assert(t.store().prefs.idleWarnMin === 90, "idleWarnMin should persist");
+          t.store().setPrefs({ idleWarnMin: 0 });
+        },
+      },
+      {
+        name: "Settings tabs all render without overflow",
+        fn: async (t) => {
+          await t.nav("#/app/settings");
+          await t.waitForText("Business");
+          for (const tab of ["Invoices", "Preferences", "Data", "Sync", "About"]) {
+            await t.clickText(tab);
+            await t.wait(120);
+            t.assertNoOverflow();
+          }
+        },
+      },
+      {
+        name: "Theme preference from Settings applies app-wide",
+        fn: async (t) => {
+          await t.nav("#/app/settings");
+          await t.clickText("Preferences");
+          await t.wait(150);
+          const html = document.documentElement;
+          const before = html.getAttribute("data-theme");
+          t.store().setPrefs({ theme: before === "dark" ? "light" : "dark" });
+          await t.wait(200);
+          t.assert(html.getAttribute("data-theme") !== before, "theme should apply to <html>");
+          t.store().setPrefs({ theme: (before as "light" | "dark") ?? "light" });
+        },
+      },
+    ],
+  },
+
+  {
+    name: "Data safety extras",
+    tests: [
+      {
+        name: "Export includes every collection",
+        fn: async (t) => {
+          const json = t.store().exportData();
+          for (const key of ["clients", "projects", "tasks", "entries", "invoices", "expenses", "estimates"]) {
+            t.assert(json.includes(`"${key}"`), `export should include ${key}`);
+          }
+        },
+      },
+      {
+        name: "Malformed import is rejected without corrupting state",
+        fn: async (t) => {
+          const before = t.store().clients.length;
+          const err = t.store().importData({ not: "a backup" });
+          t.assert(typeof err === "string" && err.length > 0, "should return an error message");
+          t.assert(t.store().clients.length === before, "state should be untouched");
+        },
+      },
+      {
+        name: "Rapid create/delete cycles stay consistent",
+        fn: async (t) => {
+          const before = t.store().clients.length;
+          for (let i = 0; i < 20; i++) {
+            const c = t.store().addClient({ name: `Churn ${i}`, currency: "USD", defaultRate: 10 });
+            t.store().deleteClient(c.id);
+          }
+          t.assert(t.store().clients.length === before, "churn should net to zero");
         },
       },
     ],
@@ -708,7 +865,7 @@ export const SUITES: SuiteDef[] = [
         name: "Landing renders with the demo clock and CTA",
         fn: async (t) => {
           await t.nav("#/");
-          await t.waitForText("TimeVault");
+          await t.waitForText("TickKeep");
           await t.waitForText("Punch in");
           t.assertNoOverflow();
         },

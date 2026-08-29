@@ -151,7 +151,7 @@ export function ReviewPage() {
         e.billable ? "Yes" : "No",
         e.billable ? Math.round((e.durationMin / 60) * e.rate * 100) / 100 : 0,
       ]);
-    downloadFile(`timevault-year-${year}.csv`, toCSV([["Date", "Project", "Description", "Hours", "Billable", "Amount"], ...rows]), "text/csv");
+    downloadFile(`tickkeep-year-${year}.csv`, toCSV([["Date", "Project", "Description", "Hours", "Billable", "Amount"], ...rows]), "text/csv");
   };
 
   return (
@@ -314,7 +314,7 @@ export function ReviewPage() {
                 ))}
               </dl>
               <p className="mt-4 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">
-                <I name="award" size={13} className="text-amber" /> TimeVault · time capsule {year}
+                <I name="award" size={13} className="text-amber" /> TickKeep · time capsule {year}
               </p>
             </section>
           </div>

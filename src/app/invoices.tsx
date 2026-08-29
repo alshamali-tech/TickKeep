@@ -925,7 +925,7 @@ function RecurringView() {
         <EmptyState
           icon="repeat"
           title="No recurring invoices yet"
-          desc="Retainers and subscriptions on autopilot — TimeVault drafts the invoice on schedule, you review and send."
+          desc="Retainers and subscriptions on autopilot — TickKeep drafts the invoice on schedule, you review and send."
         >
           <Button icon="repeat" onClick={() => setFormOpen(true)}>Create a profile</Button>
         </EmptyState>

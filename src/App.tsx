@@ -94,7 +94,7 @@ function useThemeApplier() {
     };
     apply();
     try {
-      localStorage.setItem("tv-theme", theme);
+      localStorage.setItem("tk-theme", theme);
     } catch {
       /* private mode */
     }

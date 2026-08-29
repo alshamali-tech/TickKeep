@@ -768,10 +768,18 @@ export const SUITES: SuiteDef[] = [
         name: "Settings tabs all render without overflow",
         fn: async (t) => {
           await t.nav("#/app/settings");
-          await t.waitForText("Business");
-          for (const tab of ["Invoices", "Preferences", "Data", "Sync", "About"]) {
-            await t.clickText(tab);
-            await t.wait(120);
+          // Iterate the real tab strip by role — immune to label changes and
+          // guaranteed to stay on the Settings page (no sidebar fallback).
+          let tabs = t.qa('[role="tab"]');
+          const dl = Date.now() + 6000;
+          while (tabs.length === 0 && Date.now() < dl) {
+            await t.wait(60);
+            tabs = t.qa('[role="tab"]');
+          }
+          t.assert(tabs.length >= 5, `settings should expose its full tab strip (got ${tabs.length})`);
+          for (const tab of tabs) {
+            await t.clickEl(tab);
+            await t.wait(150);
             t.assertNoOverflow();
           }
         },

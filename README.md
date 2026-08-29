@@ -33,6 +33,13 @@ Open the app → sidebar → **System → Test bench** → *Run all*.
 
 The bench drives the real UI (clicks, typing, shortcuts, file imports), streams a log, times every case, and is safe on live data. It survives mid-run navigation and always returns you to the results.
 
+Playwright specs live in `tests/e2e/` (config in `playwright.config.ts`, chromium + mobile projects):
+
+- `multi-tab.spec.ts` — two tabs share storage; a timer started in one tab bills **exactly once**; writes propagate live.
+- `pdf.spec.ts` — cold-start UI flow (client → project → entry → wizard) ending in a real `INV-xxxx.pdf` download.
+
+Run: `npm run build`, `npm run preview`, then `npx playwright test`.
+
 ## Deploying (static — any CDN)
 
 ### Cloudflare Pages (recommended)
@@ -73,6 +80,15 @@ src/
               sync, import, settings, tests, legal, landing, shell
 public/       manifest, sw.js, icons, robots, sitemap, og-image
 ```
+
+## Architecture decision records
+
+- **ADR-001 — Sync strategy: single-file merge, not event sourcing.** Each device pushes one `tickkeep-backup.json`; merges union adds, apply last-write-wins per record with a deterministic content-hash tiebreak (so all devices converge), propagate deletes via tombstones, and take the max invoice number. *Rejected:* event-sourced device logs (more moving parts for a 1–5 person audience; the single file is inspectable, trivially restorable, and already stress-tested at 1000×1000 scale) and CRDTs (binary, hard to debug, overkill). Revisit if multi-writer conflicts become frequent in the wild.
+- **ADR-002 — PDF engine: jsPDF + autotable, fixed-point layout.** All coordinates are absolute points; no `canvas.measureText`, no html2canvas screenshot pass, so output is byte-stable across browsers. Code-split — the ~130 KB gzip engine loads only when a PDF is generated. *Rejected:* pdfmake (adds a VFS font blob to the bundle for marginal gains at our three fixed templates).
+- **ADR-003 — Timer: persisted event, not running process.** `activeTimer.startedAt` is an absolute timestamp written on punch-in; elapsed is always `Date.now() − startedAt`. Immune to tab throttling, sleep, crash, and restart; a 24h guard confirms runaway timers before saving.
+- **ADR-004 — Storage defense in depth.** `navigator.storage.persist()` on boot, quota/usage estimation, a risk-graded banner with one-click export, folder auto-backup on an interval, receipt compression to ≤200 KB, and quota-safe persistence that strips base64 blobs before failing. Eviction is treated as probable, not possible.
+- **ADR-005 — State: Zustand + localStorage persist (debounced, migration-proof).** One atomic snapshot per burst of mutations; legacy keys migrate forward; version bumps merge against fresh defaults instead of discarding. *Rejected:* Dexie/IndexedDB (extra async surface for a dataset that fits comfortably in localStorage at target scale; revisit past ~5 MB of data), Redux/React Query (no server state exists).
+- **ADR-006 — Multi-tab: shared storage + BroadcastChannel guards.** Writes land in one storage key; a `tickkeep-collab` channel carries ledger-changed pings when team mode is on, and the bench verifies a timer started in one tab bills exactly once.
 
 ## License
 

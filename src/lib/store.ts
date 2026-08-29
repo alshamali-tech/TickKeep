@@ -439,6 +439,22 @@ function nextRunDate(r: RecurringTemplate, fromKey: string): string {
   return toKey(new Date(base.getFullYear(), base.getMonth() + 1, dom));
 }
 
+/** Collision-proof numbering (ADR-012): imports and parallel devices can both
+ *  land on the same candidate, so we step until the number is actually free. */
+function freshInvoiceNumber(invoices: Invoice[], prefix: string, nextNumber: number): {
+  number: string;
+  nextNumber: number;
+} {
+  const taken = new Set(invoices.map((i) => i.number));
+  let n = Math.max(1, nextNumber);
+  let candidate = `${prefix}${String(n).padStart(4, "0")}`;
+  while (taken.has(candidate)) {
+    n += 1;
+    candidate = `${prefix}${String(n).padStart(4, "0")}`;
+  }
+  return { number: candidate, nextNumber: n + 1 };
+}
+
 const isoNow = (): string => new Date().toISOString();
 
 const defaults = (): AppData => ({
@@ -750,9 +766,9 @@ export const useStore = create<AppState>()(
 
       createInvoice: (input) => {
         const s = get();
-        const number = `${s.invDefaults.prefix}${String(s.invDefaults.nextNumber).padStart(4, "0")}`;
+        const fresh = freshInvoiceNumber(s.invoices, s.invDefaults.prefix, s.invDefaults.nextNumber);
         const inv = buildInvoice({
-          number,
+          number: fresh.number,
           clientId: input.clientId,
           entryIds: input.entryIds,
           expenseIds: input.expenseIds,
@@ -769,7 +785,7 @@ export const useStore = create<AppState>()(
         });
         set({
           invoices: [...s.invoices, inv],
-          invDefaults: { ...s.invDefaults, nextNumber: s.invDefaults.nextNumber + 1 },
+          invDefaults: { ...s.invDefaults, nextNumber: fresh.nextNumber },
         });
         return inv;
       },
@@ -800,12 +816,12 @@ export const useStore = create<AppState>()(
         const s = get();
         const src = s.invoices.find((i) => i.id === id);
         if (!src) return null;
-        const number = `${s.invDefaults.prefix}${String(s.invDefaults.nextNumber).padStart(4, "0")}`;
+        const fresh = freshInvoiceNumber(s.invoices, s.invDefaults.prefix, s.invDefaults.nextNumber);
         const today = todayKey();
         const copy: Invoice = {
           ...src,
           id: uid(),
-          number,
+          number: fresh.number,
           status: "draft",
           issueDate: today,
           dueDate: toKey(addDays(parseKey(today), Math.max(0, s.invDefaults.paymentDays))),
@@ -817,7 +833,7 @@ export const useStore = create<AppState>()(
         };
         set({
           invoices: [...s.invoices, copy],
-          invDefaults: { ...s.invDefaults, nextNumber: s.invDefaults.nextNumber + 1 },
+          invDefaults: { ...s.invDefaults, nextNumber: fresh.nextNumber },
         });
         return copy;
       },
@@ -876,10 +892,10 @@ export const useStore = create<AppState>()(
         const s = get();
         const est = s.estimates.find((e) => e.id === id);
         if (!est || est.invoiceId) return null;
-        const number = `${s.invDefaults.prefix}${String(s.invDefaults.nextNumber).padStart(4, "0")}`;
+        const fresh = freshInvoiceNumber(s.invoices, s.invDefaults.prefix, s.invDefaults.nextNumber);
         const inv: Invoice = {
           id: uid(),
-          number,
+          number: fresh.number,
           clientId: est.clientId,
           issueDate: todayKey(),
           dueDate: toKey(addDays(parseKey(todayKey()), Math.max(0, s.invDefaults.paymentDays))),
@@ -896,7 +912,7 @@ export const useStore = create<AppState>()(
         };
         set({
           invoices: [...s.invoices, inv],
-          invDefaults: { ...s.invDefaults, nextNumber: s.invDefaults.nextNumber + 1 },
+          invDefaults: { ...s.invDefaults, nextNumber: fresh.nextNumber },
           estimates: s.estimates.map((e) =>
             e.id === id ? { ...e, status: "accepted" as const, invoiceId: inv.id } : e
           ),
@@ -922,10 +938,14 @@ export const useStore = create<AppState>()(
         const due = s.recurringTemplates.filter((r) => r.active && r.nextRun <= today);
         if (due.length === 0) return 0;
         let nextNumber = s.invDefaults.nextNumber;
+        const taken = new Set(s.invoices.map((i) => i.number));
         const newInvoices: Invoice[] = [];
         const updated = s.recurringTemplates.map((r) => {
           if (!r.active || r.nextRun > today) return r;
+          // skip any number already issued (import/parallel-device collisions)
+          while (taken.has(`${s.invDefaults.prefix}${String(nextNumber).padStart(4, "0")}`)) nextNumber += 1;
           const number = `${s.invDefaults.prefix}${String(nextNumber).padStart(4, "0")}`;
+          taken.add(number);
           nextNumber += 1;
           newInvoices.push({
             id: uid(),

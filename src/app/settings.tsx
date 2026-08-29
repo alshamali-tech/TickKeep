@@ -563,9 +563,63 @@ const DONATIONS = [
   { label: "Ko-fi", href: "https://ko-fi.com/mammonalshamali" },
 ];
 
+/* Detects PWA install state so we can show the right affordance (Problem 14). */
+function InstallStateCard() {
+  const [installed, setInstalled] = useState(false);
+  const [promptEvt, setPromptEvt] = useState<unknown>(null);
+
+  useEffect(() => {
+    setInstalled(window.matchMedia("(display-mode: standalone)").matches);
+    const onPrompt = (e: Event) => {
+      e.preventDefault();
+      setPromptEvt(e);
+    };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", onPrompt);
+  }, []);
+
+  if (installed) {
+    return (
+      <Card className="flex items-center gap-3 border-accent/30 bg-accent/5 p-4">
+        <I name="check" size={18} className="text-accent" />
+        <p className="text-sm text-ink2">
+          <strong className="text-ink">Running as an installed app.</strong> TickKeep works fully offline from your home screen / app list.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="flex flex-wrap items-center gap-3 p-4">
+      <I name="download" size={18} className="text-accent" />
+      <p className="min-w-0 flex-1 text-sm text-ink2">
+        <strong className="text-ink">Install TickKeep</strong> for one-tap, offline access — it runs like a native app.
+      </p>
+      {promptEvt ? (
+        <Button
+          size="sm"
+          icon="download"
+          onClick={() => {
+            const evt = promptEvt as { prompt: () => void };
+            evt.prompt();
+            setPromptEvt(null);
+          }}
+        >
+          Install now
+        </Button>
+      ) : (
+        <span className="text-[12px] text-muted">
+          On Safari iOS: Share → “Add to Home Screen”. On desktop Chrome/Edge: the install icon in the address bar.
+        </span>
+      )}
+    </Card>
+  );
+}
+
 function AboutTab() {
   return (
     <div className="space-y-4">
+      <InstallStateCard />
       <Card className="p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

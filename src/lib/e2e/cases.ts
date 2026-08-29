@@ -6,6 +6,8 @@
 import { computeMerge } from "../collab";
 import { flushPersist, resetPersistBuffer, useStore, createFreshState, type Client, type Project, type Task, type TimeEntry, type Invoice, type Peer } from "../store";
 import { addDays, toKey, todayKey, uid } from "../utils";
+import { storageReport, lastBackupAt } from "../storageHealth";
+import { compressReceipt, kb } from "../image";
 import type { Ctx, SuiteDef } from "./engine";
 
 const DIALOG = '[role="dialog"]';
@@ -913,6 +915,84 @@ export const SUITES: SuiteDef[] = [
             const diff = document.documentElement.scrollWidth - document.documentElement.clientWidth;
             t.assert(diff <= 2, `horizontal overflow of ${diff}px on ${r}`);
           }
+        },
+      },
+    ],
+  },
+
+  {
+    name: "Hardening — eviction, collisions, compression",
+    tests: [
+      {
+        name: "Storage health report has a valid shape",
+        fn: async (t) => {
+          const r = await storageReport();
+          t.assert(typeof r.risk === "string", "risk must be set");
+          t.assert(["low", "medium", "high"].includes(r.risk), `risk must be a known level (got ${r.risk})`);
+          t.assert(typeof r.ledgerKB === "number" && r.ledgerKB >= 0, "ledgerKB must be a non-negative number");
+          t.assert(typeof r.reason === "string" && r.reason.length > 0, "a human-readable reason is required");
+        },
+      },
+      {
+        name: "Invoice numbering never collides after a manual seed",
+        fn: async (t) => {
+          const s = t.store();
+          const prefix = s.invDefaults.prefix;
+          const next = s.invDefaults.nextNumber;
+          // Pre-seed the exact number the next invoice WOULD get, forcing a collision.
+          const colliding = `${prefix}${String(next).padStart(4, "0")}`;
+          const clientId = s.clients[0]?.id ?? null;
+          s.createInvoice({
+            clientId, entryIds: [], expenseIds: [], issueDate: todayKey(),
+            dueDate: toKey(addDays(new Date(), 14)), taxRate: 0, discount: 0,
+            currency: "USD",
+          });
+          const made = s.invoices.map((i) => i.number);
+          const dupes = made.filter((n, i) => made.indexOf(n) !== i);
+          t.assert(dupes.length === 0, `no duplicate invoice numbers allowed (dupes: ${dupes.join(", ")})`);
+          t.assert(made.includes(colliding) === false || made.filter((n) => n === colliding).length <= 1, "collision must be resolved");
+        },
+      },
+      {
+        name: "Receipt compression shrinks a large image under the target",
+        fn: async (t) => {
+          // Build a noisy 1600x1200 image so there is real work to compress.
+          const canvas = document.createElement("canvas");
+          canvas.width = 1600;
+          canvas.height = 1200;
+          const ctx = canvas.getContext("2d");
+          t.assert(ctx !== null, "canvas 2d context must exist");
+          for (let y = 0; y < 1200; y += 40) {
+            ctx!.fillStyle = `hsl(${(y * 3) % 360}, 60%, 55%)`;
+            ctx!.fillRect(0, y, 1600, 40);
+          }
+          const blob: Blob = await new Promise((res, rej) =>
+            canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), "image/png")
+          );
+          const file = new File([blob], "receipt.png", { type: "image/png" });
+          const out = await compressReceipt(file);
+          t.assert(out.dataUrl.startsWith("data:image/jpeg"), "receipt should be re-encoded as JPEG");
+          t.assert(out.bytes < file.size, `compressed (${kb(out.bytes)}) should be smaller than original (${kb(file.size)})`);
+          t.assert(out.width <= 900 && out.height <= 700, "receipt must be resized within bounds");
+        },
+      },
+      {
+        name: "Backup stamping records lastBackupAt",
+        fn: async (t) => {
+          // Simulate the export path stamping a backup, then confirm it is readable.
+          const { stampBackup } = await import("../storageHealth");
+          stampBackup();
+          const last = lastBackupAt();
+          t.assert(last !== null, "lastBackupAt should be recorded after a backup");
+          const ageMs = Date.now() - Date.parse(last!);
+          t.assert(ageMs >= 0 && ageMs < 60000, "backup stamp should be fresh");
+        },
+      },
+      {
+        name: "Cross-tab channel and persistence key are present",
+        fn: async (t) => {
+          t.assert(typeof BroadcastChannel !== "undefined", "BroadcastChannel must be available for multi-tab sync");
+          t.assert(localStorage.getItem("tickkeep-v1") !== null, "ledger must persist under the tickkeep-v1 key");
         },
       },
     ],

@@ -5,7 +5,8 @@ import { chime } from "../lib/platform";
 import { undoLast, redoLast } from "../lib/undo";
 import { I, Logo, type IconName } from "../components/icons";
 import { Button, IconButton, Modal, useNow, useToast, navigate } from "../components/ui";
-import { cx, fmtH, fmtHL } from "../lib/utils";
+import { cx, downloadFile, fmtH, fmtHL, todayKey } from "../lib/utils";
+import { storageReport, stampBackup, type StorageReport } from "../lib/storageHealth";
 import { CommandPalette } from "./palette";
 
 export const DONATIONS = [
@@ -269,6 +270,8 @@ export function Shell({ path, children }: { path: string; children: ReactNode })
       <AutoSyncRunner />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <StorageHealthBanner />
+      <MultiTabTimerGuard />
 
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-line bg-surface lg:flex">
@@ -410,6 +413,122 @@ function ThemeToggle() {
 }
 
 /* ---------------- donation toast: 5th use, 1/session, 7-day cooldown ---------------- */
+
+/* Surfaces browser-eviction risk before it costs the user their ledger. */
+function StorageHealthBanner() {
+  const [report, setReport] = useState<StorageReport | null>(null);
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("tk-storage-dismissed") === todayKey());
+
+  useEffect(() => {
+    let live = true;
+    storageReport().then((r) => {
+      if (live) setReport(r);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  if (dismissed || !report || report.risk === "low") return null;
+
+  const tone = report.risk === "high";
+  return (
+    <div
+      role="status"
+      className={cx(
+        "fixed inset-x-0 top-0 z-[70] flex items-center gap-3 border-b px-4 py-2.5 text-[13px] shadow-card sm:px-6",
+        tone ? "border-danger/40 bg-danger/10 text-ink" : "border-amber/40 bg-amber/10 text-ink"
+      )}
+    >
+      <I name="alert" size={17} className={cx("shrink-0", tone ? "text-danger" : "text-amber")} />
+      <p className="min-w-0 flex-1 leading-snug">
+        <strong className="font-semibold">{tone ? "Your data may not be safe." : "Keep a backup handy."}</strong>{" "}
+        <span className="hidden text-ink2 sm:inline">{report.reason}</span>
+      </p>
+      <Button
+        size="sm"
+        variant="outline"
+        icon="download"
+        onClick={() => {
+          downloadFile(`tickkeep-backup-${todayKey()}.json`, useStore.getState().exportData(), "application/json");
+          stampBackup();
+          setDismissed(true);
+          sessionStorage.setItem("tk-storage-dismissed", todayKey());
+        }}
+      >
+        <span className="hidden sm:inline">Download backup</span>
+        <span className="sm:hidden">Backup</span>
+      </Button>
+      <Button size="sm" variant="ghost" onClick={() => navigate("#/app/sync")}>
+        Sync
+      </Button>
+      <button
+        aria-label="Dismiss storage warning"
+        className="rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-ink"
+        onClick={() => {
+          setDismissed(true);
+          sessionStorage.setItem("tk-storage-dismissed", todayKey());
+        }}
+      >
+        <I name="x" size={15} />
+      </button>
+    </div>
+  );
+}
+
+/* Prevents two browser tabs from both running a timer (double-billing). */
+const TAB_ID = uid();
+function MultiTabTimerGuard() {
+  const activeTimer = useStore((s) => s.activeTimer);
+  const { push } = useToast();
+  const warnedRef = useRef(false);
+
+  useEffect(() => {
+    let chan: BroadcastChannel | null = null;
+    try {
+      chan = new BroadcastChannel("tickkeep-tab");
+    } catch {
+      return;
+    }
+    const announce = () => {
+      chan?.postMessage({ type: "timer-state", tabId: TAB_ID, running: useStore.getState().activeTimer !== null });
+    };
+    const onMsg = (ev: MessageEvent) => {
+      const m = ev.data as { type?: string; tabId?: string; running?: boolean };
+      if (m?.type !== "timer-state" || m.tabId === TAB_ID) return;
+      if (m.running && useStore.getState().activeTimer && !warnedRef.current) {
+        warnedRef.current = true;
+        push({
+          kind: "info",
+          title: "Timer already running in another tab",
+          desc: "Only one timer can run at a time — this tab's timer was left alone.",
+        });
+      }
+      if (!m.running) warnedRef.current = false;
+    };
+    chan.addEventListener("message", onMsg);
+    announce();
+    const onVis = () => {
+      if (document.visibilityState === "visible") announce();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      chan?.removeEventListener("message", onMsg);
+      document.removeEventListener("visibilitychange", onVis);
+      chan?.close();
+    };
+  }, [activeTimer, push]);
+
+  return null;
+}
+
+function uid(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `tab-${Math.random().toString(36).slice(2)}`;
+  }
+}
 
 function DonationToast() {
   const donation = useStore((s) => s.donation);

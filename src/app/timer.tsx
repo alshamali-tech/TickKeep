@@ -383,6 +383,7 @@ export function TimerPage() {
   const [taskId, setTaskId] = useState("");
   const [note, setNote] = useState("");
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [confirmLong, setConfirmLong] = useState(false);
   const [editing, setEditing] = useState<TimeEntry | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
@@ -410,7 +411,7 @@ export function TimerPage() {
   const runningProject = projects.find((p) => p.id === activeTimer?.projectId);
   const projectTasks = tasks.filter((t) => t.projectId === (activeTimer?.projectId ?? projectId));
 
-  const handleStop = () => {
+  const doStop = () => {
     const e = stopTimer();
     if (prefs.timerSound) chime("stop");
     if (e) {
@@ -421,6 +422,15 @@ export function TimerPage() {
         action: { label: "Undo", onClick: () => useStore.getState().deleteEntry(e.id) },
       });
     }
+  };
+
+  /* Guard against a forgotten timer: confirm anything over 24h before saving. */
+  const handleStop = () => {
+    if (activeTimer && Date.now() - activeTimer.startedAt > 24 * 3600 * 1000) {
+      setConfirmLong(true);
+      return;
+    }
+    doStop();
   };
 
   const handlePunchIn = () => {
@@ -608,6 +618,30 @@ export function TimerPage() {
       >
         <p className="text-sm leading-relaxed text-ink2">
           The running time will be thrown away — nothing is saved. If you meant to keep it, punch out instead.
+        </p>
+      </Modal>
+
+      <Modal
+        open={confirmLong}
+        onClose={() => setConfirmLong(false)}
+        title="That's a long shift"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirmLong(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                setConfirmLong(false);
+                doStop();
+              }}
+            >
+              Save it anyway
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm leading-relaxed text-ink2">
+          This timer has been running for over 24 hours — {activeTimer ? fmtHL(Math.round((Date.now() - activeTimer.startedAt) / 60000)) : ""}.
+          Did you forget to stop it? You can save it as-is, or cancel and edit the entry manually afterwards.
         </p>
       </Modal>
 

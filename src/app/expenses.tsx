@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EXPENSE_CATEGORIES, useStore, type Expense } from "../lib/store";
+import { compressReceipt, kb } from "../lib/image";
 import { I } from "../components/icons";
 import {
   Badge, Button, ConfirmDialog, EmptyState, IconButton, Input, Menu, Modal, Pagination,
@@ -394,13 +395,16 @@ function ExpenseFormModal({
                 push({ kind: "err", title: "Receipt must be an image file" });
                 return;
               }
-              if (f.size > 400 * 1024) {
-                push({ kind: "err", title: "Image too large", desc: "Keep receipts under 400 KB." });
+              if (f.size > 8 * 1024 * 1024) {
+                push({ kind: "err", title: "Image too large", desc: "Receipts up to 8 MB are accepted — they'll be compressed." });
                 return;
               }
-              const reader = new FileReader();
-              reader.onload = () => setReceipt(String(reader.result));
-              reader.readAsDataURL(f);
+              void compressReceipt(f).then((r) => {
+                setReceipt(r.dataUrl);
+                if (r.originalBytes > r.bytes * 1.1) {
+                  push({ kind: "ok", title: `Receipt compressed to ${kb(r.bytes)}`, desc: `Was ${kb(r.originalBytes)} — stored smaller to protect your storage quota.` });
+                }
+              });
             }}
           />
         </div>

@@ -118,12 +118,6 @@ function Hero() {
             >
               Start free <I name="chevR" size={16} />
             </a>
-            <a
-              href="#how"
-              className="inline-flex h-12 items-center gap-2 rounded-lg border border-line bg-surface px-5 text-[15px] font-semibold text-ink transition-colors hover:border-accent/50"
-            >
-              See how it works
-            </a>
           </div>
           <p className="mt-5 font-mono text-[12px] text-muted">
             Free to use right now · works fully offline once loaded

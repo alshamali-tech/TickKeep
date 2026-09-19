@@ -360,68 +360,7 @@ function TheMath() {
   return (
     <section id="math" className="border-y border-line bg-surface">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
-        <div className="grid items-start gap-12 lg:grid-cols-2">
-          <Reveal>
-            <p className="font-mono text-[12px] font-semibold uppercase tracking-[0.16em] text-amber">After the price hikes</p>
-            <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-[40px] sm:leading-[1.1]">
-              Run the numbers yourself.
-            </h2>
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-ink2">
-              Paid trackers charge per seat, per month — and several jumped their prices by
-              <strong className="text-ink"> 480–1500%</strong> after private-equity acquisitions.
-              Slide to your team's shape and see what staying free is worth.
-            </p>
-            <div className="mt-8 space-y-6 rounded-xl border border-line bg-bg p-5 shadow-card sm:p-6">
-              <div>
-                <div className="mb-2 flex items-baseline justify-between">
-                  <label htmlFor="seats" className="text-[13px] font-semibold text-ink2">Seats on your team</label>
-                  <span className="font-mono text-lg font-bold tabular text-ink">{seats}</span>
-                </div>
-                <input id="seats" type="range" min={1} max={25} value={seats} onChange={(e) => setSeats(Number(e.target.value))} className="w-full accent-[var(--tv-amber)]" />
-              </div>
-              <div>
-                <div className="mb-2 flex items-baseline justify-between">
-                  <label htmlFor="years" className="text-[13px] font-semibold text-ink2">Years you'll keep tracking</label>
-                  <span className="font-mono text-lg font-bold tabular text-ink">{years}</span>
-                </div>
-                <input id="years" type="range" min={1} max={10} value={years} onChange={(e) => setYears(Number(e.target.value))} className="w-full accent-[var(--tv-amber)]" />
-              </div>
-              <div>
-                <p className="mb-2 text-[13px] font-semibold text-ink2">Typical paid-tracker seat price</p>
-                <div className="flex gap-2">
-                  {([11, 16] as const).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPrice(p)}
-                      aria-pressed={price === p}
-                      className={cx(
-                        "rounded-full border px-4 py-1.5 font-mono text-[13px] font-bold tabular transition-all",
-                        price === p ? "border-amber bg-amber/15 text-amber" : "border-line text-muted hover:border-amber/50 hover:text-ink"
-                      )}
-                    >
-                      ${p}/mo
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="rule-dash border-t border-line pt-5">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="font-mono text-[12px] uppercase tracking-wide text-muted">You'd spend</p>
-                    <p key={total} className="anim-rise font-mono text-4xl font-bold tabular leading-tight text-danger sm:text-[44px]">
-                      ${total.toLocaleString()}
-                    </p>
-                    <p className="mt-1 font-mono text-[12.5px] tabular text-muted">${monthly}/mo · ${yearly.toLocaleString()}/yr</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono text-[12px] uppercase tracking-wide text-muted">With TickKeep</p>
-                    <p className="font-mono text-4xl font-bold tabular leading-tight text-accent sm:text-[44px]">$0</p>
-                    <p className="mt-1 font-mono text-[12.5px] tabular text-muted">today</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Reveal>
+        <div className="grid items-start gap-12">
           <Reveal delay={120}>
             <p className="font-mono text-[12px] font-semibold uppercase tracking-[0.16em] text-accent">No feature gates</p>
             <h3 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">

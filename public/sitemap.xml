@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://tickkeep.app/</loc>
+    <loc>https://tickkeep.mamoonalshamali.workers.dev/</loc>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://tickkeep.app/#/privacy</loc>
+    <loc>https://tickkeep.mamoonalshamali.workers.dev/#/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://tickkeep.app/#/terms</loc>
+    <loc>https://tickkeep.mamoonalshamali.workers.dev/#/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>

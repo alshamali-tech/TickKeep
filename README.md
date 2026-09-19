@@ -58,18 +58,6 @@ Same repo → **Add New Project** → framework *Vite* → build `npm run build`
 
 Both are free tiers; both serve the service worker and hash routes correctly with no extra config.
 
-## Production checklist (before you announce it)
-
-| Item | Where | Action |
-|---|---|---|
-| Domain | `index.html`, `public/robots.txt`, `public/sitemap.xml` | Replace `tickkeep.app` with your real domain (3 files) |
-| OG image | `index.html` → `og:image` / `twitter:image` | Host the PNG yourself (e.g. `public/og-image.png`) and point both tags at `/og-image.png`; a local SVG ships today |
-| Donation link | `src/app/shell.tsx` → `DONATIONS` | Ko-fi handle (currently `mammonalshamali`) |
-| Contact | `src/app/settings.tsx`, `src/app/legal.tsx`, landing footer | Email / LinkedIn (currently `mamoonalshamali@gmail.com`) |
-| Legal contact | `src/app/legal.tsx` | Set the governing-law line in Terms |
-| Analytics | — | None by design; do not add tracking (it's in the Privacy Policy) |
-| Post-deploy smoke test | live site | Open landing → app, create an entry, reload (data must survive), toggle dark mode, generate a PDF, run the test bench once |
-
 ## Repo map
 
 ```

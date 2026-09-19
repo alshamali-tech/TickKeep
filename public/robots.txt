@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /app
 
-Sitemap: https://tickkeep.app/sitemap.xml
+Sitemap: https://tickkeep.mamoonalshamali.workers.dev/sitemap.xml
